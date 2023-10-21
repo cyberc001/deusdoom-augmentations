@@ -11,7 +11,7 @@ class DD_Aug_Cloak : DD_Augmentation
 
 	override int get_base_drain_rate()
 	{
-		return (360 - 40 * (getRealLevel() - 1)) * (blinktimer == 0 ? 1 : 0.5) * (owner.bISMONSTER ? 0.35 : 1);
+		return (290 - 35 * (getRealLevel() - 1)) * (blinktimer == 0 ? 1 : 0.5) * (owner.bISMONSTER ? 0.35 : 1);
 	}
 
 	override void install()
@@ -95,7 +95,7 @@ class DD_Aug_Cloak : DD_Augmentation
 		if(owner is "PlayerPawn")
 			owner.A_SetRenderStyle(1.0, Style_Fuzzy);
 		else
-			owner.A_SetRenderStyle(0.2, Style_Translucent);
+			owner.A_SetRenderStyle(0.15, Style_Translucent);
 
 		Actor mnst;
 		ThinkerIterator it = ThinkerIterator.create("Actor", STAT_DEFAULT);

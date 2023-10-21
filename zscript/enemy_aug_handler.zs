@@ -10,7 +10,7 @@ class DD_EnemyAugHandler : StaticEventHandler
 	}
 	override void OnRegister()
 	{
-		registerAugInPool("DD_Aug_Cloak", 5);
+		registerAugInPool("DD_Aug_Cloak", 3);
 		registerAugInPool("DD_Aug_AggressiveDefenseSystem", 6);
 		registerAugInPool("DD_Aug_BallisticProtection", 10);
 		registerAugInPool("DD_Aug_EnergyShield", 12);
