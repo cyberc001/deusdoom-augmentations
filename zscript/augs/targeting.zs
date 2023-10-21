@@ -1,18 +1,9 @@
-struct DD_Aug_Targeting_Queue
-{
-	bool zoomed_in; // current status of zooming
-	double tfov; // desired FOV or 0 if shouldn't be changed
-}
 class DD_Aug_Targeting : DD_Augmentation
 {
 	ui TextureID tex_off;
 	ui TextureID tex_on;
 
 	ui TextureID targ_frame; // frame background for rendering target's image
-	ui TextureID scope; // scope displayed while zooming in
-
-	DD_Aug_Targeting_Queue queue;
-	double zoom_fov; // FOV when zoomed
 
 	Actor last_target_obj; // Target to render info about
 
@@ -37,7 +28,7 @@ class DD_Aug_Targeting : DD_Augmentation
 			    "TECH THREE: Current state of the target and their\n"
 			    "targeted entity are provided additionaly.\n\n"
 			    "TECH FOUR: Also grants an ability to capture image of\n"
-			    "a target and an autonomous telescopic zoom.\n\n"
+			    "a target.\n\n"
 			    "Energy Rate: 40 Units/Minute\n\n";
 
 		disp_legend_desc = "LEGENDARY UPGRADE: Augmentation firmly\n"
@@ -48,7 +39,6 @@ class DD_Aug_Targeting : DD_Augmentation
 
 		slots_cnt = 1;
 		slots[0] = Eyes;
-		zoom_fov = 15.0;
 
 		can_be_legendary = true;
 	}
@@ -57,7 +47,6 @@ class DD_Aug_Targeting : DD_Augmentation
 		tex_off = TexMan.checkForTexture("TARG0");
 		tex_on = TexMan.checkForTexture("TARG1");
 		targ_frame = TexMan.checkForTexture("AUGUI20");
-		scope = TexMan.checkForTexture("AUGUI38");
 	}
 
 	// ------------------
@@ -86,27 +75,12 @@ class DD_Aug_Targeting : DD_Augmentation
 	// Engine events
 	// -------------
 
-	override void toggle()
-	{
-		super.toggle();
-		if(!enabled && queue.zoomed_in){
-			queue.zoomed_in = false;
-			queue.tfov = 0;
-			players[consoleplayer].setFOV(CVar.getCVar("fov", players[consoleplayer]).getFloat());
-		}
-	}
-
 	override void tick()
 	{
 		super.tick();
 
 		if(!owner || !(owner is "PlayerPawn"))
 			return;
-
-		if(queue.tfov != 0){
-			owner.player.setFOV(queue.tfov);
-			queue.tfov = 0;
-		}
 
 		let look_tracer = new("DD_Targeting_Tracer");
 		look_tracer.source = owner;
@@ -152,10 +126,6 @@ class DD_Aug_Targeting : DD_Augmentation
 
 		if(!enabled)
 			return;
-		if(queue.zoomed_in){
-			UI_Draw.texture(scope,
-					320/2-200/2, 0, 200, 200);
-		}
 
 		vector2 off = CVar_Utils.getOffset("dd_targeting_info_off");
 
@@ -257,30 +227,6 @@ class DD_Aug_Targeting : DD_Augmentation
 
 		if(source == last_target_obj)
 			newDamage = damage * target_damage_mult;
-	}
-
-
-	override bool inputProcess(InputEvent e)
-	{
-		super.inputProcess(e);
-
-		if(!enabled)
-			return false;
-		if(e.type == UiEvent.Type_KeyDown)
-		{
-			if(KeyBindUtils.checkBind(e.KeyScan, "dd_togg_zoom")
-			&& getRealLevel() >= 4)
-			{
-				queue.zoomed_in = !queue.zoomed_in;
-				if(queue.zoomed_in){
-					queue.tfov = zoom_fov;
-				}
-				else{
-					queue.tfov = CVar.getCVar("fov", players[consoleplayer]).getFloat();
-				}
-			}
-		}
-		return false;
 	}
 
 }

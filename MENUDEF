@@ -20,8 +20,6 @@ AddOptionMenu "DD_Controls"
 	StaticText "Gravitational field augmentation", Purple
 	Control "Toggle mode",						dd_gravfield_toggle
 	StaticText "Targeting augmentation", Purple
-	Control "Zoom in/out",						dd_togg_zoom
-	StaticText ""
 }
 
 AddOptionMenu "DD_Settings_ControlScheme"
