@@ -12,7 +12,6 @@ AddOptionMenu "DD_Controls"
 	Control "Activate/deactive augmentation in torso slot 1",	dd_togg_aug_7
 	Control "Activate/deactive augmentation in torso slot 2",	dd_togg_aug_8
 	Control "Activate/deactive augmentation in torso slot 3",	dd_togg_aug_9
-	Control "Activate/deactive light augmentation (unused)",	dd_togg_aug_0
 	Control "Activate all augmentations",				dd_togg_aug_all_on
 	Control "Deactivate all augmentations",				dd_togg_aug_all_off
 	StaticText "Agility enhancement augmentation", Purple

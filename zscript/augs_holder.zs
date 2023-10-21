@@ -12,7 +12,7 @@ struct DD_UIQueue{
 
 class DD_AugsHolder : Inventory
 {
-	const augs_slots = 10;
+	const augs_slots = 9;
 	DD_Augmentation augs[augs_slots];
 
 	const dropped_items_svel = 3.5;

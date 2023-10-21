@@ -34,9 +34,6 @@ addkeysection "DeusDoom controls" DD_ControlsKF
 	addmenukey "Activate/deactivate augmentation in torso slot 3"		dd_togg_aug_9
 		alias	dd_togg_aug_9	"netevent dd_togg_aug 9"
 		defaultbind KP9 dd_togg_aug_9
-	addmenukey "Activate/deactivate light augmentation"			dd_togg_aug_0
-		alias	dd_togg_aug_0	"netevent dd_togg_aug 0"
-		defaultbind KP0 dd_togg_aug_0
 
 	addmenukey "Activate all augmentations"					dd_togg_aug_all_on
 		alias dd_togg_aug_all_on	"netevent dd_togg_aug -1"
