@@ -127,7 +127,8 @@ class DD_AugsHolder : Inventory
 		for(uint i = 0; i < augs_slots; ++i)
 		{
 			if(augs[i] && ui_queue.aug_toggle_queue[i]){
-				augs[i].toggle();
+				if(!augs[i].passive)
+					augs[i].toggle();
 				ui_queue.aug_toggle_queue[i] = false;
 			}
 			if(augs[i] && augs[i].enabled){

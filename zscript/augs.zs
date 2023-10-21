@@ -23,16 +23,15 @@
 
 enum DD_AugSlots
 {
-	Subdermal1	= 1,
-	Subdermal2	= 2,
-	Cranial		= 3,
-	Arms		= 4,
-	Legs		= 5,
-	Eyes		= 6,
-	Torso1		= 7,
-	Torso2		= 8,
-	Torso3		= 9,
-	Light		= 0
+	Subdermal1	= 0,
+	Subdermal2	= 1,
+	Cranial		= 2,
+	Arms		= 3,
+	Legs		= 4,
+	Eyes		= 5,
+	Torso1		= 6,
+	Torso2		= 7,
+	Torso3		= 8,
 };
 
 // Description:
@@ -76,6 +75,7 @@ class DD_Augmentation : Inventory
 	bool can_be_legendary;
 
 	bool enabled;
+	bool passive;			// if false, cannot be toggled
 	bool can_be_all_toggled;	// is toggled on/off by "enable/disable all augmentations" binds
 
 	DD_AugSlots slots[3];	// possible slot numbers
