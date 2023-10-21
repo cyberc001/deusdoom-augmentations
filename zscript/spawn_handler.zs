@@ -276,10 +276,13 @@ class DD_SpawnHandler : StaticEventHandler
 
 		Actor obj;
 		ThinkerIterator it = ThinkerIterator.create();
-		while(obj = Actor(it.next()))
+		while(obj = Actor(it.next())){
+			if(!(obj is "Inventory") || Inventory(obj).owner)
+				continue;
 			if((transfer_augcans && obj is "DD_AugmentationCanister")
 			|| (transfer_upgrcans && obj is "DD_AugmentationUpgradeCanister")
 			|| (transfer_upgrcans_lgnd && obj is "DD_AugmentationUpgradeCanisterLegendary"))
 				transfer_items.push((class<Inventory>)(obj.GetClass()));
+		}
 	}
 }
