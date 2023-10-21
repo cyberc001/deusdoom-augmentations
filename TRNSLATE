@@ -1,0 +1,3 @@
+DD_EnergyShield_AuraRed			= "0:255=#[255,0,0]"
+DD_EnergyShield_AuraOrange		= "0:255=#[255,127,0]"
+DD_EnergyShield_AuraYellow		= "0:255=#[255,255,0]"

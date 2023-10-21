@@ -1,0 +1,10 @@
+version "4.5"
+
+#include "zscript/augs.zs"
+#include "zscript/augs_event_handler.zs"
+#include "zscript/augs_holder.zs"
+#include "zscript/enemy_aug_ai.zs"
+#include "zscript/enemy_aug_handler.zs"
+#include "zscript/items.zs"
+#include "zscript/ui_augs.zs"
+#include "zscript/spawn_handler.zs"

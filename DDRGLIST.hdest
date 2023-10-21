@@ -1,0 +1,56 @@
+%supress_warn_class_not_exists
+
+# General damage:
+
+# General bullet damage, also reduces wounds by built-in exception in DD_AugsHolder::modifyDamage()
+HDBulletActor !damageIsEnergy_Inflictor damageIsBallistic_Inflictor;
+
+
+# General fireball damage (i.e. imps/caco fireballs)
+HDFireball !damageIsBallistic_Inflictor damageIsEnergy_Inflictor;
+
+# General fire damage (i.e. ignition from imps fireballs)
+Heat !damageIsBallistic_Inflictor damageIsEnergy_Inflictor $1.2 damageIsEnvironmental_Inflictor $0.75;
+
+
+# Actors (mostly for melee attacks that are not recognized as hitscan):
+
+# Babuins (aka pinky demons)
+Babuin damageIsBallistic_Source;
+
+# Boners (aka revenants)
+Boner damageIsBallistic_Source;
+BonerBall damageIsEnergy_Inflictor;
+
+# Flying skulls (aka lost souls)
+FlyingSkull damageIsBallistic_Source; # It prevents damage only from original impact, then it's "heat" damage
+
+# Pain bringers (aka hell knights)
+PainBringer damageIsBallistic_Source;
+
+# Pain lords (aka barons of hell)
+PainLord damageIsBallistic_Source;
+
+# Ninja pirates (aka spectres)
+NinjaPirate damageIsBallistic_Source;
+
+# Serpentipedes (aka imps)
+Serpentipede damageIsBallistic_Source;
+
+# Techno spider (aka arachnotron)
+BeamSpotFlags damageIsEnergy_Inflictor; # This is also used by thunderbuster weapon
+
+# Trilobites (aka cacodemons)
+FoofPuff !damageIsBallistic_Inflictor damageIsEnergy_Inflictor; # melee attack
+
+# Marine (scripted marine)
+HDMarine damageIsBallistic_Source;
+
+# Any kind of zombie
+HDMobMan damageIsBallistic_Source;
+
+# Arachnotron
+TechnoSpider !isFooledByCloak isFooledByRadarTransparency;
+
+# Spider Mastermind
+Technorantula !isFooledByCloak isFooledByRadarTransparency;

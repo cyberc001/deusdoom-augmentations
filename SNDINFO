@@ -1,0 +1,23 @@
+ui/aug/activate				AUGACT
+ui/aug/deactivate			AUGDEACT
+
+ui/aug/defense_on			AUGDEFON
+ui/aug/drone_loop			AUGDRONE
+
+ui/aug/cloak_down			AUGCLODN
+ui/aug/cloak_up				AUGCLOUP
+
+ui/aug/cell_use				BCELLUSE
+
+ui/aug/agressive_defense_system_beep	BEEP1
+
+
+ui/menu/activate			MENUACTV
+ui/menu/focus				MENUFOCS
+ui/menu/press				MENUPRES
+
+
+play/aug/loop				AUGLOOP
+
+play/aug/fatalsave1			AUGSAVE1
+play/aug/fatalsave2			AUGSAVE2

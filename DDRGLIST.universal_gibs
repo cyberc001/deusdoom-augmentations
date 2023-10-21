@@ -1,0 +1,3 @@
+%supress_warn_class_not_exists
+
+UG_GibBase !displayedSonar;

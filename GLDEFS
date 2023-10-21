@@ -1,0 +1,41 @@
+HardwareShader postprocess scene
+{
+	Name "DD_NightVision"
+	Shader "shaders/nightvis.fp" 330
+}
+HardwareShader postprocess screen
+{
+	Name "DD_NightVision2"
+	Shader "shaders/nightvis.fp" 330
+}
+
+HardwareShader postprocess scene
+{
+	Name "DD_FatalRegen"
+	Shader "shaders/fatalregen.fp" 330
+
+	Uniform float strength
+}
+
+
+Pointlight DD_VisionEnhancementLight
+{
+	color 1.0 1.0 1.0
+	size 148
+	dontlightself 1
+}
+Object DD_VisionEnhancement_LightDummy
+{
+	frame TNT0 { light DD_VisionEnhancementLight }
+}
+
+Pointlight DD_AugmentationCanisterLight
+{
+	color 0.039 0.608 1.0
+	size 32
+}
+Object DD_AugmentationCanister
+{
+	frame AGCN { light DD_AugmentationCanisterLight }
+	frame AGCO { light DD_AugmentationCanisterLight }
+}

@@ -1,0 +1,26 @@
+DD_UIBold
+{
+	template DDFN1%03d
+
+	base 1
+	first 33
+	count 94
+}
+
+DD_UI
+{
+	template DDFN2%03d
+
+	base 1
+	first 33
+	count 94
+}
+
+DD_OverlayBold
+{
+	template DDFN3%03d
+
+	base 1
+	first 33
+	count 94
+}

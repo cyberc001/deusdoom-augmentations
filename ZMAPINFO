@@ -1,0 +1,4 @@
+gameinfo
+{
+	addeventhandlers = "DD_AugsEventHandler", "DD_InputEventHandler", "DD_SpawnHandler", "DD_SoundHandler", "DD_EnemyAugHandler"
+}

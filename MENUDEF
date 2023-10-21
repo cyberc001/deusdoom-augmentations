@@ -1,0 +1,139 @@
+AddOptionMenu "DD_Controls"
+{
+	Control "Open/close augmentations interface",			dd_togg_ui_augs
+	Control "Use a bioelectric cell",				dd_use_cell
+	StaticText "Augmentations", Purple
+	Control "Activate/deactive augmentation in subdermal slot 1",	dd_togg_aug_1
+	Control "Activate/deactive augmentation in subdermal slot 2",	dd_togg_aug_2
+	Control "Activate/deactive augmentation in cranial slot",	dd_togg_aug_3
+	Control	"Activate/deactive augmentation in arms slot",		dd_togg_aug_4
+	Control "Activate/deactive augmentation in legs slot",		dd_togg_aug_5
+	Control "Activate/deactive augmentation in eyes slot",		dd_togg_aug_6
+	Control "Activate/deactive augmentation in torso slot 1",	dd_togg_aug_7
+	Control "Activate/deactive augmentation in torso slot 2",	dd_togg_aug_8
+	Control "Activate/deactive augmentation in torso slot 3",	dd_togg_aug_9
+	Control "Activate/deactive light augmentation (unused)",	dd_togg_aug_0
+	Control "Activate all augmentations",				dd_togg_aug_all_on
+	Control "Deactivate all augmentations",				dd_togg_aug_all_off
+	StaticText "Agility enhancement augmentation", Purple
+	Control "Dash in held movement direction",			dd_dash
+	StaticText "Gravitational field augmentation", Purple
+	Control "Toggle mode",						dd_gravfield_toggle
+	StaticText "Targeting augmentation", Purple
+	Control "Zoom in/out",						dd_togg_zoom
+	StaticText ""
+}
+
+AddOptionMenu "DD_Settings_ControlScheme"
+{
+	Option "Use double-tapping of movement keys for dashing", "dd_dash_on_doubletap", "OnOff"
+	Slider "Time between taps when double-tapping (in ticks)", "dd_dash_doubletap_timer", 1, 35, 1, 0, "dd_dash_on_doubletap"
+	StaticText ""
+}
+AddOptionMenu "DD_Settings_Interface"
+{
+	StaticText "You can enable HUD debug mode to see how certain graphical elements", Green
+	StaticText "are displayed on screen. However, you still need appropriate", Green
+	StaticText "augmentations installed in order for their graphical elements", Green
+	StaticText "to be displayed.", Green
+	Option "Enable HUD debug mode", "dd_hud_debug", "OnOff"
+	StaticText ""
+	StaticText "Everything is virtually rendered in 320x200 resolution,", Green
+	StaticText "so adjust offsets accordingly.", Green
+	StaticText "CVAR: dd_augdisp_offx", DarkGray
+	Slider "Augmentations display X offset", "dd_augdisp_offx", -320.0, 320.0, 0.25, 2
+	StaticText "CVAR: dd_augdisp_offy", DarkGray
+	Slider "Augmentations display Y offset", "dd_augdisp_offy", -200.0, 200.0, 0.25, 2
+	StaticText "CVar: dd_augdisp_scale", DarkGray
+	Slider "Augmentations display scale", "dd_augdisp_scale", 0.0, 10.0, 0.1, 1
+	StaticText ""
+	StaticText "CVAR: dd_bioelbar_offx", DarkGray
+	Slider "Bioelectric energy bar X offset", "dd_bioelbar_offx", -320.0, 320.0, 0.5, 2
+	StaticText "CVAR: dd_bioelbar_offy", DarkGray
+	Slider "Bioelectric energy bar Y offset", "dd_bioelbar_offy", -200.0, 200.0, 0.25, 2
+	StaticText ""
+	Option "Display damage indicators", "dd_dmgind_show", "OnOff"
+	StaticText "CVAR: dd_dmgind_offx", DarkGray
+	Slider "Damage indicators X offset", "dd_dmgind_offx", -320.0, 320.0, 0.5, 2
+	StaticText "CVAR: dd_dmgind_offy", DarkGray
+	Slider "Damage indicators Y offset", "dd_dmgind_offy", -200.0, 200.0, 0.25, 2
+	StaticText ""
+	StaticText "CVAR: dd_agdefsys_cd_offx", DarkGray
+	Slider "Aggressive defense system cooldown X offset", "dd_agdefsys_cd_offx", -320.0, 320.0, 0.5, 2
+	StaticText "CVAR: dd_agdefsys_cd_offy", DarkGray
+	Slider "Aggressive defense system cooldown Y offset", "dd_agdefsys_cd_offy", -200.0, 200.0, 0.25, 2
+	StaticText ""
+	StaticText "CVAR: dd_targeting_info_offx", DarkGray
+	Slider "Targeting information X offset", "dd_targeting_info_offx", -320.0, 320.0, 0.5, 2
+	StaticText "CVAR: dd_targeting_info_offy", DarkGray
+	Slider "Targeting information Y offset", "dd_targeting_info_offy", -200.0, 200.0, 0.25, 2
+	StaticText ""
+	StaticText "CVAR: dd_spy_drone_cam_offx", DarkGray
+	Slider "Spy drone camera feed X offset", "dd_spy_drone_cam_offx", -320.0, 320.0, 0.5, 2
+	StaticText "CVAR: dd_spy_drone_cam_offy", DarkGray
+	Slider "Spy drone camera feed Y offset", "dd_spy_drone_cam_offy", -200.0, 200.0, 0.25, 2
+	StaticText ""
+	StaticText "CVAR: dd_spy_drone_mark_limit", DarkGray
+	Slider "Spy drone mark limit", "dd_spy_drone_mark_limit", 10, 1000, 10, 0
+	StaticText ""
+}
+AddOptionMenu "DD_Settings_Gameplay"
+{
+	StaticText "Item rarity", Purple
+	StaticText "Describes how much items you gain throughout the game.", Green
+	StaticText "Higher values correspond to lower amount of items", Green
+	StaticText "(ex. 2.0x multiplier makes items appear 2 times more rare).", Green
+	StaticText "It's recommended to give short playthroughs lower rarity multipliers,", Green
+	StaticText "and set high rarity multipliers for long megaWADs/slaugthermaps.", Green
+	StaticText "CVAR: dd_ptmult_global", DarkGray
+	Slider "Global item rarity", "dd_ptmult_global", 0.05, 10.0, 0.05, 2
+	StaticText "CVAR: dd_ptmult_cell", DarkGray
+	Slider "Bioelectric cell rarity", "dd_ptmult_cell", 0.05, 10.0, 0.05, 2
+	StaticText "CVAR: dd_ptmult_upgrade", DarkGray
+	Slider "Augmentation upgrade canister rarity", "dd_ptmult_upgrade", 0.05, 10.0, 0.05, 2
+	StaticText "CVAR: dd_ptmult_upgrade_lgnd", DarkGray
+	Slider "Augmentation legendary upgrade canister rarity", "dd_ptmult_upgrade_lgnd", 0.05, 10.0, 0.05, 2
+	StaticText "CVAR: dd_ptmult_aug", DarkGray
+	Slider "Augmentation canister rarity", "dd_ptmult_aug", 0.05, 10.0, 0.05, 2
+	StaticText ""
+	StaticText "Enemy augmentation spawns", Purple
+	StaticText "Controls how often enemies will recieve augmentations.", Green
+	StaticText "You can disable this mechanic altogether if you already are playing", Green
+	StaticText "a challenging mod or mapset.", Green
+	StaticText "\"Regress\" option is a value by which initial augmentation", Green
+	StaticText "spawn chance is multiplied after each successful augmentation spawn.", Green
+	StaticText "Probability > 1.0 is treated as 100% probability, which can be used", Green
+	StaticText "to guaranteedly spawn more than 1 augmentation.", Green
+	Option "Enemy augmentations", "dd_enable_enemy_augs", "OnOff"
+	StaticText "CVAR: dd_enemy_aug_chance", DarkGray
+	Slider "Enemy initial augmentation chance", "dd_enemy_aug_chance", 0.0, 2.0, 0.05, 2
+	StaticText "CVAR: dd_enemy_aug_chance_regress", DarkGray
+	Slider "Enemy augmentation chance regress", "dd_enemy_aug_chance_regress", 0.0, 0.95, 0.05, 2
+	StaticText "CVAR: dd_enemy_boss_aug_chance", DarkGray
+	Slider "Boss initial augmentation chance", "dd_enemy_boss_aug_chance", 0.0, 2.0, 0.05, 2
+	StaticText "CVAR: dd_enemy_boss_aug_chance_regress", DarkGray
+	Slider "Boss augmentation chance regress", "dd_enemy_boss_aug_chance_regress", 0.0, 0.95, 0.05, 2
+	StaticText "CVAR: dd_enemy_aug_level_chance", DarkGray
+	Slider "Enemy augmentation initial level up chance", "dd_enemy_aug_level_chance", 0.0, 2.0, 0.05, 2
+	StaticText "CVAR: dd_enemy_aug_level_chance_regress", DarkGray
+	Slider "Enemy augmentation level up chance regress", "dd_enemy_aug_level_chance_regress", 0.0, 0.95, 0.05, 2
+	StaticText "CVAR: dd_enemy_boss_aug_level_chance", DarkGray
+	Slider "boss augmentation initial level up chance", "dd_enemy_boss_aug_level_chance", 0.0, 2.0, 0.05, 2
+	StaticText "CVAR: dd_enemy_boss_aug_level_chance_regress", DarkGray
+	Slider "Boss augmentation level up chance regress", "dd_enemy_boss_aug_level_chance_regress", 0.0, 0.95, 0.05, 2
+	StaticText ""
+	StaticText "Item transfer", Purple
+	StaticText "In order to combat map makers placing a lot of monsters in", Green
+	StaticText "unreachable spots, important items like augmentation canisters", Green
+	StaticText "are transferred to next level if not picked up. However, you can", Green
+	StaticText "tweak these settings.", Green
+	Option "Transfer augmentation canisters", "dd_transfer_augcanisters", "OnOff"
+	Option "Transfer augmentation upgrade canisters", "dd_transfer_upgradecanisters", "OnOff"
+	Option "Transfer augmentation legendary upgrade canisters", "dd_transfer_upgradecanisters_lgnd", "OnOff"
+	StaticText ""
+	StaticText "Miscellaneous", Purple
+	StaticText "Various gameplay options that do not fit any particular category.", Green
+	StaticText "Be careful: they might break your game (and might be too funny).", Green
+	Option "Enable toggling augmentations while being dead", "dd_toggle_augs_dead", "OnOff"
+	StaticText ""
+}

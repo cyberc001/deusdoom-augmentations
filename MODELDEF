@@ -1,0 +1,125 @@
+Model DD_SpyDrone
+{
+	Path "models/"
+	Model 0 "SpyDrone_d.3d"
+	Skin 0 "SpyDrone_d.png"
+
+	Scale 0.1 0.1 0.1
+	AngleOffset 90
+
+	FrameIndex DSDR A 0 0
+}
+
+Model DD_AugmentationCanister
+{
+	Path "models/"
+	Model 0 "AugmentationCannister_d.3d"
+	SurfaceSkin 0 0 "AugmentationCannister.png"
+	SurfaceSkin 0 1 "dtsbody0.png"
+
+	Scale 0.11 0.11 0.055
+	Offset 0.0 0.0 13.0
+
+	FrameIndex AGCN A 0 0
+
+	SurfaceSkin 0 1 "dtsbody1.png"
+	FrameIndex AGCN B 0 0
+	SurfaceSkin 0 1 "dtsbody2.png"
+	FrameIndex AGCN C 0 0
+	SurfaceSkin 0 1 "dtsbody3.png"
+	FrameIndex AGCN D 0 0
+	SurfaceSkin 0 1 "dtsbody4.png"
+	FrameIndex AGCN E 0 0
+	SurfaceSkin 0 1 "dtsbody5.png"
+	FrameIndex AGCN F 0 0
+	SurfaceSkin 0 1 "dtsbody6.png"
+	FrameIndex AGCN G 0 0
+	SurfaceSkin 0 1 "dtsbody7.png"
+	FrameIndex AGCN H 0 0
+	SurfaceSkin 0 1 "dtsbody8.png"
+	FrameIndex AGCN I 0 0
+	SurfaceSkin 0 1 "dtsbody9.png"
+	FrameIndex AGCN J 0 0
+	SurfaceSkin 0 1 "dtsbody10.png"
+	FrameIndex AGCN K 0 0
+	SurfaceSkin 0 1 "dtsbody11.png"
+	FrameIndex AGCN L 0 0
+	SurfaceSkin 0 1 "dtsbody12.png"
+	FrameIndex AGCN M 0 0
+	SurfaceSkin 0 1 "dtsbody13.png"
+	FrameIndex AGCN N 0 0
+	SurfaceSkin 0 1 "dtsbody14.png"
+	FrameIndex AGCN O 0 0
+	SurfaceSkin 0 1 "dtsbody15.png"
+	FrameIndex AGCN P 0 0
+	SurfaceSkin 0 1 "dtsbody16.png"
+	FrameIndex AGCN Q 0 0
+	SurfaceSkin 0 1 "dtsbody17.png"
+	FrameIndex AGCN R 0 0
+	SurfaceSkin 0 1 "dtsbody18.png"
+	FrameIndex AGCN S 0 0
+	SurfaceSkin 0 1 "dtsbody19.png"
+	FrameIndex AGCN T 0 0
+	SurfaceSkin 0 1 "dtsbody20.png"
+	FrameIndex AGCN U 0 0
+	SurfaceSkin 0 1 "dtsbody21.png"
+	FrameIndex AGCN V 0 0
+	SurfaceSkin 0 1 "dtsbody22.png"
+	FrameIndex AGCN W 0 0
+	SurfaceSkin 0 1 "dtsbody23.png"
+	FrameIndex AGCN X 0 0
+	SurfaceSkin 0 1 "dtsbody24.png"
+	FrameIndex AGCN Y 0 0
+	SurfaceSkin 0 1 "dtsbody25.png"
+	FrameIndex AGCN Z 0 0
+	SurfaceSkin 0 1 "dtsbody26.png"
+	FrameIndex AGCO A 0 0
+	SurfaceSkin 0 1 "dtsbody27.png"
+	FrameIndex AGCO B 0 0
+	SurfaceSkin 0 1 "dtsbody28.png"
+	FrameIndex AGCO C 0 0
+	SurfaceSkin 0 1 "dtsbody29.png"
+	FrameIndex AGCO D 0 0
+	SurfaceSkin 0 1 "dtsbody30.png"
+	FrameIndex AGCO E 0 0
+	SurfaceSkin 0 1 "dtsbody31.png"
+	FrameIndex AGCO F 0 0
+	SurfaceSkin 0 1 "dtsbody32.png"
+	FrameIndex AGCO G 0 0
+	SurfaceSkin 0 1 "dtsbody33.png"
+	FrameIndex AGCO H 0 0
+}
+Model DD_AugmentationUpgradeCanister
+{
+	Path "models/"
+	Model 0 "AugmentationUpgradeCannister_d.3d"
+	Skin 0 "AugmentationUpgradeCannister.png"
+
+	Scale 0.11 0.11 0.055
+	Offset 0.0 0.0 13.0
+
+	FrameIndex AUCN A 0 0
+}
+Model DD_AugmentationUpgradeCanisterLegendary
+{
+	Path "models/"
+	Model 0 "AugmentationUpgradeCannister_d.3d"
+	Skin 0 "AugmentationUpgradeCannisterLegendary.png"
+
+	Scale 0.11 0.11 0.055
+	Offset 0.0 0.0 15.0
+
+	FrameIndex AULC A 0 0
+}
+Model DD_BioelectricCell
+{
+	Path "models/"
+	Model 0 "BioCell_d.3d"
+	SurfaceSkin 0 0 "BioCellTex1.png"
+	SurfaceSkin 0 1 "BioCellTex2.png"
+
+	Scale 0.11 0.11 0.055
+	Offset 0.0 0.0 5.0
+
+	FrameIndex BCEL A 0 0
+}

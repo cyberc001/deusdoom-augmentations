@@ -1,0 +1,8 @@
+#include "zscript/ui_augs/widget_classes/ui_ddinstalledaugbutn.zs"
+#include "zscript/ui_augs/widget_classes/ui_ddinstalledauglvldisp.zs"
+#include "zscript/ui_augs/widget_classes/ui_ddsmbutton_install.zs"
+#include "zscript/ui_augs/widget_classes/ui_ddsmbutton_toglaug.zs"
+#include "zscript/ui_augs/widget_classes/ui_ddcanisteraugbutn.zs"
+#include "zscript/ui_augs/widget_classes/ui_ddsmbutton_usecell.zs"
+#include "zscript/ui_augs/widget_classes/ui_ddsmbutton_upgrade.zs"
+#include "zscript/ui_augs/widget_classes/ui_ddbioelenergybar.zs"

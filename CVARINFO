@@ -1,0 +1,52 @@
+user bool dd_show_reticle = true;
+
+user bool dd_dash_on_doubletap = false;
+user int dd_dash_doubletap_timer = 6;
+
+
+server float dd_ptmult_global = 1.0;
+server float dd_ptmult_cell = 1.0;
+server float dd_ptmult_upgrade = 1.0;
+server float dd_ptmult_upgrade_lgnd = 1.0;
+server float dd_ptmult_aug = 1.0;
+
+server bool dd_transfer_augcanisters = true;
+server bool dd_transfer_upgradecanisters = false;
+server bool dd_transfer_upgradecanisters_lgnd = true;
+
+server bool dd_toggle_augs_dead = false;
+
+
+server bool dd_enable_enemy_augs = true;
+server float dd_enemy_aug_chance = 0.7;
+server float dd_enemy_aug_chance_regress = 0.85;
+server float dd_enemy_boss_aug_chance = 1.6;
+server float dd_enemy_boss_aug_chance_regress = 0.85;
+server float dd_enemy_aug_level_chance = 0.75;
+server float dd_enemy_aug_level_chance_regress = 0.8;
+server float dd_enemy_boss_aug_level_chance = 0.9;
+server float dd_enemy_boss_aug_level_chance_regress = 0.9;
+
+user bool dd_hud_debug = false;
+
+user float dd_augdisp_offx = 0.0;
+user float dd_augdisp_offy = 0.0;
+user float dd_augdisp_scale = 1.0;
+
+user float dd_bioelbar_offx = 0.0;
+user float dd_bioelbar_offy = 0.0;
+
+user bool dd_dmgind_show = true;
+user float dd_dmgind_offx = 0.0;
+user float dd_dmgind_offy = 0.0;
+
+user float dd_agdefsys_cd_offx = 0.0;
+user float dd_agdefsys_cd_offy = 0.0;
+
+user float dd_targeting_info_offx = 0.0;
+user float dd_targeting_info_offy = 0.0;
+
+user float dd_spy_drone_cam_offx = 0.0;
+user float dd_spy_drone_cam_offy = 0.0;
+
+user int dd_spy_drone_mark_limit = 40;

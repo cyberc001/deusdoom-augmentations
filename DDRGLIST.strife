@@ -1,0 +1,55 @@
+# Player:
+	PhosphorousFire damageIsEnergy_Inflictor $0.8 damageIsEnvironmental_Inflictor $0.75;
+
+# Enemies:
+
+# Ceiling turret
+	CeilingTurret !isFooledByCloak isFooledByRadarTransparency;
+
+# Templar
+	Templar !damageIsBallistic_Source damageIsEnergy_Source;
+
+# Sentinel
+	Sentinel !isFooledByCloak isFooledByRadarTransparency;
+
+# Crusader
+	Crusader !isFooledByCloak isFooledByRadarTransparency;
+
+# Stalker
+	Stalker !isFooledByCloak isFooledByRadarTransparency;
+
+# Reaver
+	Reaver !isFooledByCloak isFooledByRadarTransparency;
+
+# Inquisitor
+	InquisitorShot projCanBeDestroyed $2.5;
+	Inquisitor !isFooledByCloak isFooledByRadarTransparency;
+
+
+# Bosses:
+
+# Programmer
+	Programmer !isFooledByCloak !isFooledByRadarTransparency;
+
+# Bishop
+	StrifeBishop !isFooledByCloak !isFooledByRadarTransparency;
+	BishopMissile projCanBeDestroyed $2.0;
+
+# Macil
+	# Before spectre possession
+	Macil1 damageIsBallistic_Source $0.65;
+	# After spectre possession
+	Macil2 damageIsBallistic_Source $0.65;
+	Macil2 !isFooledByCloak !isFooledByRadarTransparency;
+
+# Loremaster
+	Loremaster !isFooledByCloak !isFooledByRadarTransparency;
+
+# Spectres
+	SpectralMonster !isFooledByCloak !isFooledByRadarTransparency;
+
+	# First spectre
+	SpectralLightningV1 damageIsEnergy_Inflictor $0.85; # 100 damage
+	SpectralLightningV2 damageIsEnergy_Inflictor $0.8; # 50 damage
+	# Fourth spectre
+	SpectralLightningBigV2 damageIsEnergy_Inflictor $0.8; # 60 damage

@@ -1,0 +1,25 @@
+# Undead knight \ ghost knight axe attack
+	KnightAxe damageIsBallistic_Inflictor !damageIsEnergy_Inflictor;
+	RedAxe damageIsBallistic_Inflictor $0.8 !damageIsEnergy_Inflictor;
+
+# Iron lich's attacks
+	# Ice attack
+	HeadFX1 damageIsBallistic_Inflictor !damageIsEnergy_Inflictor; # Ice ball
+	HeadFX2 damageIsBallistic_Inflictor !damageIsEnergy_Inflictor; # Ice shard
+	# Whirlwind attacks
+	Whirlwind !projCanBeDestroyed;
+	# Fireball attack
+	HeadFX3 damageIsEnergy_Inflictor $0.75;
+
+# Minotaur's attacks
+	Minotaur damageIsBallistic_Source $0.5;	# Melee
+	MinotaurFX1 !damageIsBallistic_Inflictor damageIsEnergy_Inflictor $0.65; # Fireballs
+	MinotaurFX2 !damageIsBallistic_Inflictor damageIsEnergy_Inflictor $0.9; # Running flame
+	MinotaurFX3 !damageIsBallistic_Inflictor damageIsEnergy_Inflictor $0.9; # Flame trail
+
+# D'Sparil's attacks
+	# Mounted
+	SorcererFX1 damageIsEnergy_Inflictor $0.7; # Chaos serpent fireballs
+	# Dismounted
+	Sorcerer2 !damageIsBallistic_Source damageIsEnergy_Inflictor $0.75; # Lightning staff melee attack
+	Sorcerer2FX1 damageIsEnergy_Inflictor $0.85; # lightning bolt projectile
