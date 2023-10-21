@@ -7,33 +7,33 @@ addkeysection "DeusDoom controls" DD_ControlsKF
 		alias dd_use_cell	"netevent dd_use_cell"
 		defaultbind O dd_use_cell
 
-	addmenukey "Activate/deactivate augmentation in subdermal slot 1"	dd_togg_aug_1
+	addmenukey "Activate/deactivate augmentation in subdermal slot 1"	dd_togg_aug_0
+		alias	dd_togg_aug_0	"netevent dd_togg_aug 0"
+		defaultbind KP1 dd_togg_aug_0
+	addmenukey "Activate/deactivate augmentation in subdermal slot 2"	dd_togg_aug_1
 		alias	dd_togg_aug_1	"netevent dd_togg_aug 1"
-		defaultbind KP1 dd_togg_aug_1
-	addmenukey "Activate/deactivate augmentation in subdermal slot 2"	dd_togg_aug_2
+		defaultbind KP2 dd_togg_aug_1
+	addmenukey "Activate/deactivate augmentation in cranial slot"		dd_togg_aug_2
 		alias	dd_togg_aug_2	"netevent dd_togg_aug 2"
-		defaultbind KP2 dd_togg_aug_2
-	addmenukey "Activate/deactivate augmentation in cranial slot"		dd_togg_aug_3
+		defaultbind KP3 dd_togg_aug_2
+	addmenukey "Activate/deactivate augmentation in arms slot"		dd_togg_aug_3
 		alias	dd_togg_aug_3	"netevent dd_togg_aug 3"
-		defaultbind KP3 dd_togg_aug_3
-	addmenukey "Activate/deactivate augmentation in arms slot"		dd_togg_aug_4
+		defaultbind KP4 dd_togg_aug_3
+	addmenukey "Activate/deactivate augmentation in legs slot"		dd_togg_aug_4
 		alias	dd_togg_aug_4	"netevent dd_togg_aug 4"
-		defaultbind KP4 dd_togg_aug_4
-	addmenukey "Activate/deactivate augmentation in legs slot"		dd_togg_aug_5
+		defaultbind KP5 dd_togg_aug_4
+	addmenukey "Activate/deactivate augmentation in eyes slot"		dd_togg_aug_5
 		alias	dd_togg_aug_5	"netevent dd_togg_aug 5"
-		defaultbind KP5 dd_togg_aug_5
-	addmenukey "Activate/deactivate augmentation in eyes slot"		dd_togg_aug_6
+		defaultbind KP6 dd_togg_aug_5
+	addmenukey "Activate/deactivate augmentation in torso slot 1"		dd_togg_aug_6
 		alias	dd_togg_aug_6	"netevent dd_togg_aug 6"
-		defaultbind KP6 dd_togg_aug_6
-	addmenukey "Activate/deactivate augmentation in torso slot 1"		dd_togg_aug_7
+		defaultbind KP7 dd_togg_aug_6
+	addmenukey "Activate/deactivate augmentation in torso slot 2"		dd_togg_aug_7
 		alias	dd_togg_aug_7	"netevent dd_togg_aug 7"
-		defaultbind KP7 dd_togg_aug_7
-	addmenukey "Activate/deactivate augmentation in torso slot 2"		dd_togg_aug_8
+		defaultbind KP8 dd_togg_aug_7
+	addmenukey "Activate/deactivate augmentation in torso slot 3"		dd_togg_aug_8
 		alias	dd_togg_aug_8	"netevent dd_togg_aug 8"
-		defaultbind KP8 dd_togg_aug_8
-	addmenukey "Activate/deactivate augmentation in torso slot 3"		dd_togg_aug_9
-		alias	dd_togg_aug_9	"netevent dd_togg_aug 9"
-		defaultbind KP9 dd_togg_aug_9
+		defaultbind KP9 dd_togg_aug_8
 
 	addmenukey "Activate all augmentations"					dd_togg_aug_all_on
 		alias dd_togg_aug_all_on	"netevent dd_togg_aug -1"
