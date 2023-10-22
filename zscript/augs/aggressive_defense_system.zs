@@ -87,16 +87,16 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 	clearscope double getRange()
 	{
 		if(getRealLevel() <= max_level)
-			return 140 + 20 * (getRealLevel() - 1);
+			return (140 + 20 * (getRealLevel() - 1)) * (owner.bIsMonster ? 0.6 : 1);
 		else
-			return 140 + 20 * (max_level - 1) + 10 * (getRealLevel() - max_level);
+			return (140 + 20 * (max_level - 1) + 10 * (getRealLevel() - max_level)) * (owner.bIsMonster ? 0.6 : 1);
 	}
 	int getBaseCD()
 	{
 		if(getRealLevel() <= max_level)
-			return 57 - 15 * (getRealLevel() - 1);
+			return (57 - 15 * (getRealLevel() - 1)) * (owner.bIsMonster ? 1.6 : 1);
 		else
-			return 57 - 15 * (max_level - 1) - 4 * (getRealLevel() - max_level);
+			return (57 - 15 * (max_level - 1) - 4 * (getRealLevel() - max_level)) * (owner.bIsMonster ? 1.6 : 1);
 	}
 
 	array<double> proj_dispx;
