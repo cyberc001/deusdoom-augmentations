@@ -7,12 +7,12 @@
 	SpiderMastermind damageIsBallistic_Source $0.65;
 
 # Combat strength
-	# Doesn't make sense in IRL terms.
 	Chainsaw !isHandToHandDamage_Weapon;
 
 # Energy shield
-	# Barons of hell are unlikely to melee a lot, so...
 	BaronBall damageIsEnergy_Inflictor $0.8;
+	Archvile damageIsEnergy_Inflictor $0.6;
+	ArchvileFire damageIsEnergy_Inflictor $0.6;
 
 # Cloak / Radar transparency
 	# They're cybernetic monsters, after all
