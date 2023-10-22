@@ -159,7 +159,7 @@ class DD_Aug_Regeneration : DD_Augmentation
 			if(regen_timer > 0)
 				--regen_timer;
 			else{
-				double maxreg = min(owner.SpawnHealth() * 0.01 * getRealLevel(), 100);
+				double maxreg = min(owner.SpawnHealth() * 0.008 * getRealLevel(), 100 * (getRealLevel() + 1) / 2.);
 				if(!owner.giveInventory("Health", getHealthRegenRate() + maxreg))
 					toggle();
 				regenerated_this_tick += getHealthRegenRate();
