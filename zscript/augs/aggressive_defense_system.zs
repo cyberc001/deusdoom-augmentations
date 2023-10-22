@@ -125,9 +125,11 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 		for(uint i = 0; i < ddevh.proj_list.size(); ++i)
 		{
 			proj = ddevh.proj_list[i];
-			if(!proj) {
+			if(!proj){
 				ddevh.proj_list.delete(i); --i; continue;
 			}
+			if(!owner)
+				return;
 
 			if(!RecognitionUtils.projCanBeDestroyed(proj, cd_ml, owner.bIsMonster) || owner.Distance3D(proj) > getRange() * 8.0 || proj.target == owner || (owner.bIsMonster && proj.target.bIsMonster && proj.tracer != owner))
 				continue;
