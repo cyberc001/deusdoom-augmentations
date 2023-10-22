@@ -128,10 +128,8 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 			if(!proj){
 				ddevh.proj_list.delete(i); --i; continue;
 			}
-			if(!owner)
-				return;
 
-			if(!RecognitionUtils.projCanBeDestroyed(proj, cd_ml, owner.bIsMonster) || owner.Distance3D(proj) > getRange() * 8.0 || proj.target == owner || (owner.bIsMonster && proj.target.bIsMonster && proj.tracer != owner))
+			if(!RecognitionUtils.projCanBeDestroyed(proj, cd_ml, owner.bIsMonster) || owner.Distance3D(proj) > getRange() * 8.0 || proj.target == owner || (owner.bIsMonster && proj.target && proj.target.bIsMonster && proj.tracer != owner))
 				continue;
 			if(owner.Distance3D(proj) > getRange()) {
 				proj_dispx.push(proj.pos.x);
