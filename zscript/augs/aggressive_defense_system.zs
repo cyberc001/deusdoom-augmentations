@@ -128,9 +128,9 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 			if(!proj) {
 				ddevh.proj_list.delete(i); --i; continue;
 			}
-			if(!RecognitionUtils.projCanBeDestroyed(proj, cd_ml) || owner.Distance3D(proj) > getRange() * 8.0 || proj.target == owner)
+
+			if(!RecognitionUtils.projCanBeDestroyed(proj, cd_ml, owner.bIsMonster) || owner.Distance3D(proj) > getRange() * 8.0 || proj.target == owner || (owner.bIsMonster && proj.target.bIsMonster && proj.tracer != owner))
 				continue;
-			
 			if(owner.Distance3D(proj) > getRange()) {
 				proj_dispx.push(proj.pos.x);
 				proj_dispy.push(proj.pos.y);
@@ -154,7 +154,7 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 
 					proj.giveInventory("DD_ProjDamageMod", 1);
 					let dmod = DD_ProjDamageMod(proj.findInventory("DD_ProjDamageMod"));
-					dmod.mult = 2.0;
+					dmod.mult = 3.0;
 				}
 				else{
 					if(isLegendary())
@@ -163,8 +163,6 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 						Actor.Spawn("DD_AggressiveDefenseSystem_FlashGFX", proj.pos);
 						proj.die(proj, proj);
 						destr_cd = getBaseCD() * cd_ml;
-						if(!(owner is "PlayerPawn"))
-							destr_cd *= 0.7;
 					}
 				}
 			}
