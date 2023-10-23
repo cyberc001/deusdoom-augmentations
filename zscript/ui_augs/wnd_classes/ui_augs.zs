@@ -47,11 +47,19 @@ class UI_Augs : UI_Window
 	UI_Augs_Sidepanel sidepanel; // for augmentation buttons widget, set externally
 	ui int selected_aug_slot;
 
+	override String getName() { return "Augmentations"; }
+	override String getToggEvent() { return "dd_toggle_ui_augs"; }
 
 	override void UIInit()
 	{
 		widgets.clear();
-		self.x = 10; self.y = 5;
+		if(!sidepanel){
+			sidepanel = new("UI_Augs_Sidepanel");
+			sidepanel.UIInit();
+			
+		}
+
+		self.x = 10; self.y = 15;
 
 		iaugbutn_arms = UI_DDInstalledAugButton(New("UI_DDInstalledAugButton"));
 		iaugbutn_arms.parent_wnd = self;
@@ -285,10 +293,16 @@ class UI_Augs : UI_Window
 		butn_upgrade.text_color = 0xFFFFFF;
 		butn_upgrade.text_font = aug_font;
 	}
+	override void open()
+	{
+		let ddevh = DD_EventHandler(StaticEventHandler.Find("DD_EventHandler"));
+		ddevh.wndmgr.addWindow(ddevh, sidepanel);
+	}
 	override void close()
 	{
+		let ddevh = DD_EventHandler(StaticEventHandler.Find("DD_EventHandler"));
+		ddevh.wndmgr.closeWindow(ddevh, sidepanel);
 	}
-
 
 	override void drawOverlay(RenderEvent e)
 	{

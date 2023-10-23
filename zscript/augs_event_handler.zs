@@ -1,4 +1,4 @@
-class DD_AugsEventHandler : StaticEventHandler
+class DD_AugsEventHandler : DD_EventHandlerBase
 {
 	SoundUtils snd_utils;
 	RecognitionUtils recg_utils;
@@ -6,7 +6,6 @@ class DD_AugsEventHandler : StaticEventHandler
 	DD_PatchChecker patch_checker;
 
 	ui UI_Augs wnd_augs;
-	ui UI_Augs_Sidepanel wnd_augs_sidepanel;
 
 	DD_EventHandlerQueue queue;
 
@@ -322,16 +321,19 @@ class DD_AugsEventHandler : StaticEventHandler
 			}
 		}
 	}
-	override void consoleProcess(ConsoleEvent e)
+
+	override void consoleProcess(ConsoleEvent e) { _ConsoleProcess(e.name); }
+	override void _ConsoleProcess(string e_name)
 	{
-		if(e.name == "dd_toggle_ui_augs")
+		if(e_name == "dd_toggle_ui_augs")
 		{
-			// Open/close augmentations UI
-			// Arguments: none
 			let ddevh = DD_EventHandler(StaticEventHandler.Find("DD_EventHandler"));
-			ddevh.wndmgr.addWindow(ddevh, wnd_augs);
-			ddevh.wndmgr.addWindow(ddevh, wnd_augs_sidepanel);
-			// Closing windows is done in window classes themselves.
+			if(!ddevh.wnd_nav.child_wnd){
+				ddevh.wndmgr.addWindow(ddevh, wnd_augs);
+				//ddevh.wndmgr.addWindow(ddevh, wnd_augs_sidepanel);
+				ddevh.wnd_nav.child_wnd = wnd_augs;
+				ddevh.wndmgr.addWindow(ddevh, ddevh.wnd_nav);
+			}
 		}
 	}
 
@@ -342,14 +344,12 @@ class DD_AugsEventHandler : StaticEventHandler
 			aughld = DD_AugsHolder(players[consoleplayer].mo.findInventory("DD_AugsHolder"));
 		if(!queue.ui_init)
 		{
-			if(aughld){
+			let ddevh = DD_EventHandler(StaticEventHandler.Find("DD_EventHandler"));
+			if(ddevh.wndmgr && aughld){
 				queue.ui_init = true;
 				aughld.UIInit();
 				wnd_augs = new("UI_Augs");
-				wnd_augs_sidepanel = new("UI_Augs_Sidepanel");
-				wnd_augs.sidepanel = wnd_augs_sidepanel;
 				wnd_augs.UIInit();
-				wnd_augs_sidepanel.UIInit();
 			}
 		}
 		if(aughld)

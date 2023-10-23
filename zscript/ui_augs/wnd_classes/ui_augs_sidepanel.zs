@@ -33,7 +33,7 @@ class UI_Augs_Sidepanel : UI_Window
 	{
 		widgets.clear();
 
-		self.x = 150; self.y = 5;
+		self.x = 150; self.y = 16;
 		w = 140; h = 195;
 
 		// Fonts
