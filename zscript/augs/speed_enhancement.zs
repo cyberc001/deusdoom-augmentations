@@ -18,15 +18,19 @@ class DD_Aug_SpeedEnhancement : DD_Augmentation
 		disp_name = "Speed Enhancement";
 		disp_desc = "Ionic polymeric gel myofibrils are woven into the leg\n"
 			    "muscles increasing the speed at which an agent can\n"
-			    "run and the height they can jump.\n\n"
-			    "TECH ONE: Speed and jumping are increased slightly.\n\n"
-			    "TECH TWO: Speed and jumping are increased\n"
-			    "moderately.\n\n"
-			    "TECH THREE: Speed and jumping are increased\n"
-			    "significantly.\n\n"
-			    "TECH FOUR: An agent can run like the wind and leap\n"
-			    "meters high.\n\n"
-			    "Energy Rate: 70 Units/Minute";
+			    "run and the height they can jump.\n\n";
+		_level = 1;
+		enabled = true;
+		disp_desc = disp_desc .. string.format("TECH ONE: Speed increase is %g%%.\nJump height increase is %g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100);
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Speed increase is %g%%.\nJump height increase is %g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100);
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Speed increase is %g%%.\nJump height increase is %g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100);
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Speed increase is %g%%.\nJump height increase is %g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100);
+		_level = 1;
+		enabled = false;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		slots_cnt = 1;
 		slots[0] = Legs;
@@ -47,13 +51,6 @@ class DD_Aug_SpeedEnhancement : DD_Augmentation
 	{
 		if(enabled){
 			double hdestmult = 1.0;
-			if(DD_ModChecker.isLoaded_HDest() && DD_PatchChecker.isLoaded_HDest()){
-				Class<Actor> cmlc_cls = ClassFinder.findActorClass("DD_HDCanMoveLegsCompensator");
-				Actor cmlc = spawn(cmlc_cls);
-				cmlc.target = owner;
-				hdestmult = cmlc.getDeathHeight();
-				cmlc.destroy();
-			}
 			return 1.20 + 0.20 * (getRealLevel() - 1) * hdestmult;
 		}
 		return 1.0;

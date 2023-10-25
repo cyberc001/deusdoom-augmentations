@@ -19,17 +19,7 @@ class DD_Aug_Regeneration : DD_Augmentation
 		id = 5;
 		disp_name = "Regeneration";
 
-		if(DD_ModChecker.isLoaded_HDest() && DD_PatchChecker.isLoaded_HDest())
-			disp_desc = "Programmable polymerase automatically directs\n"
-				    "construction of proteins in injured cells, healing various\n"
-				    "wounds of an agent at slow rate.\n"
-				    "Each level increases not only healing rate, but allows\n"
-				    "more wound types to be healed.\n\n"
-				    "TECH ONE: Fresh and bleeding wounds are healed.\n\n"
-				    "TECH TWO: Burns are healed.\n\n"
-				    "TECH THREE: Old wounds are healed.\n\n"
-				    "TECH FOUR: Aggravated damage is healed.\n\n";
-		else if(DD_ModChecker.isLoaded_DeathStrider() && DD_PatchChecker.isLoaded_DeathStrider())
+		if(DD_ModChecker.isLoaded_DeathStrider() && DD_PatchChecker.isLoaded_DeathStrider()){
 			disp_desc = "Programmable polymerase automatically directs\n"
 				    "construction of proteins in injured cells, healing various\n"
 				    "wounds of an agent at slow rate.\n"
@@ -39,16 +29,23 @@ class DD_Aug_Regeneration : DD_Augmentation
 				    "TECH TWO: Wounds are healed.\n\n"
 				    "TECH THREE: Body integrity is restored.\n\n"
 				    "TECH FOUR: Blood is restored.\n\n";
-		else
+		}
+		else{
 			disp_desc = "Programmable polymerase automatically directs\n"
 				    "construction of proteins in injured cells, restoring an\n"
-				    "agent to full health over time.\n\n"
-				    "TECH ONE: Healing occurs at a normal rate.\n\n"
-				    "TECH TWO: Healing occurs at a slightly faster rate.\n\n"
-				    "TECH THREE: Healing occurs at a moderately faster\n"
-				    "rate.\n\n"
-				    "TECH FOUR: Healing occurs at a significantly faster\n"
-				    "rate.\n\n";
+				    "agent to full health over time.\n\n";
+			_level = 1;
+			disp_desc = disp_desc .. string.format("TECH ONE: %g health regenerated per %.2gs.\n\n", getHealthRegenRate(), getHealthRegenInterval() / 35.);
+			_level = 2;
+			disp_desc = disp_desc .. string.format("TECH TWO: %g health regenerated per %.2gs.\n\n", getHealthRegenRate(), getHealthRegenInterval() / 35.);
+			_level = 3;
+			disp_desc = disp_desc .. string.format("TECH THREE: %g health regenerated per %.2gs.\n\n", getHealthRegenRate(), getHealthRegenInterval() / 35.);
+			_level = 4;
+			disp_desc = disp_desc .. string.format("TECH FOUR: %g health regenerated per %.2gs.\n\n", getHealthRegenRate(), getHealthRegenInterval() / 35.);
+
+			_level = 1;
+			disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
+				}
 
 		disp_legend_desc = "LEGENDARY UPGRADE: Prevents an instance of\n"
 				   "fatal damage directed at agent, granting a short\n"

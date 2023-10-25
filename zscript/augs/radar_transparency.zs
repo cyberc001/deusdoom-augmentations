@@ -25,16 +25,16 @@ class DD_Aug_RadarTransparency : DD_Augmentation
 			    "Provides highly effective concealment from electronic\n"
 			    "detection methods used by cybernetic enemies.\n"
 			    "Attacking by any means breaks this effect by a brief\n"
-			    "moment.\n\n"
-			    "TECH ONE: Power drain is normal, agent is discovered\n"
-			    "for a significant period of time.\n\n"
-			    "TECH TWO: Power drain is reduced slightly, agent\n"
-			    "becomes undetectable faster after attacking.\n\n"
-			    "TECH THREE: Power drain is reduced moderately, agent\n"
-			    "becomes undetectable significantly faster.\n\n"
-			    "TECH FOUR: Power drain is reduced significantly. agent\n"
-			    "is detected for a very brief moment.\n\n"
-			    "Energy Rate: 400-250 Units/Minute\n\n";
+			    "moment.\n\n";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Invisibility restores after %.2gs.\nEnergy rate %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Invisibility restores after %.2gs.\nEnergy rate %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Invisibility restores after %.2gs.\nEnergy rate %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Invisibility restores after %.2gs.\nEnergy rate %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
+		_level = 1;
 
 		disp_legend_desc = "LEGENDARY UPGRADE: Augmentation can interfere\n"
 				   "with heat and visual signatures using EMP, creating\n"

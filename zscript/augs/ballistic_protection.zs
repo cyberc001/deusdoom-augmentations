@@ -1,4 +1,4 @@
-class DD_Aug_BallisticProtection : DD_Augmentation
+CLASS DD_Aug_BallisticProtection : DD_Augmentation
 {
 	ui TextureID tex_off;
 	ui TextureID tex_on;
@@ -18,21 +18,21 @@ class DD_Aug_BallisticProtection : DD_Augmentation
 		disp_name = "Ballistic Protection";
 		disp_desc = "Monomolecular plates reinforce the skin's epithelial\n"
 			    "membrane, reducing the damage an agent recieves\n"
-			    "from bullet-like projectiles and piercing melee attacks.\n\n"
-			    "TECH ONE: Damage from projectiles and melee attacks\n"
-			    "is reduced sligthly.\n\n"
-			    "TECH TWO: Damage from projectiles and melee attacks\n"
-			    "is reduced moderately.\n\n"
-			    "TECH THREE: Damage from projectiles and melee\n"
-			    "attacks is reduced significantly.\n\n"
-			    "TECH FOUR: An agent is nearly invulnurable to damage\n"
-			    "from projectiles and melee attacks.\n\n"
-			    "Energy Rate: 70 Units/Minute\n\n";
+			    "from bullet-like projectiles and piercing melee attacks.\n\n";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		disp_legend_desc = "LEGENDARY UPGRADE: Some ballistic attacks\n"
-				   "directed at agent are redirected towards their origin.\n"
-				   "Statistically this effect triggers on 1 from 3 such\n"
-				   "attacks.";
+				   "directed at agent are redirected towards the attacker.\n"
+				   "This effect triggers on every 3rd attack.\n";
 
 		slots_cnt = 2;
 		slots[0] = Subdermal1;

@@ -22,11 +22,11 @@ class DD_Aug_GravitationalField : DD_Augmentation
 		_level = 1;
 		disp_desc = disp_desc .. string.format("TECH ONE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
 		_level = 2;
-		disp_desc = disp_desc .. string.format("TECH ONE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
+		disp_desc = disp_desc .. string.format("TECH TWO: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
 		_level = 3;
-		disp_desc = disp_desc .. string.format("TECH ONE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
+		disp_desc = disp_desc .. string.format("TECH THREE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
 		_level = 4;
-		disp_desc = disp_desc .. string.format("TECH ONE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
+		disp_desc = disp_desc .. string.format("TECH FOUR: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 

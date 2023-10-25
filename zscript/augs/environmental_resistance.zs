@@ -18,14 +18,18 @@ class DD_Aug_EnvironmentalResistance : DD_Augmentation
 		disp_name = "Environmental Resistance";
 		disp_desc = "Induced keratin production strengthens all epithelial\n"
 			    "tissues and reduces an agent's vulnerability to\n"
-			    "radiation, toxins and hot surfaces.\n\n"
-			    "TECH ONE: Hazard resistance is increased slightly.\n\n"
-			    "TECH TWO: Hazard resistance is increased moderately.\n\n"
-			    "TECH THREE: Hazard resistance is increased\n"
-			    "significantly.\n\n"
-			    "TECH FOUR: An agent is invulnerable to damage from\n"
-			    "any environmental hazards.\n\n"
-			    "Energy Rate: 40 Units/Minute\n\n";
+			    "radiation, toxins and hot surfaces.\n\n";
+
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		disp_legend_desc = "LEGENDARY UPGRADE: Energy emitted by hazard\n"
 				      "surfaces is converted to bioelectric energy. This\n"

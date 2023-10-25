@@ -19,15 +19,17 @@ class DD_Aug_CombatStrength : DD_Augmentation
 		disp_desc = "Sorting rotors accelerate calcium ion concentration\n"
 			     "in the sarcoplasmic reticulum, increasing an agent's\n"
 			     "muscle speed several-fold and multiplying the damage\n"
-			     "they inflict in melee combat.\n\n"
-			     "TECH ONE: The effectiveness of melee weapons is\n"
-			     "increased slightly.\n\n"
-			     "TECH TWO: The effectiveness of melee weapons is\n"
-			     "increased moderately.\n\n"
-			     "TECH THREE: The effectiveness of melee weapons is\n"
-			     "increased significantly.\n\n"
-			     "TECH FOUR: Melee weapons are almost instantly lethal.\n\n"
-			     "Energy Rate: 50 Units/Minute\n\n";
+			     "they inflict in melee combat.\n\n";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Damage bonus is %g%%.\n\n", (getDamageFactor() - 1) * 100);
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Damage bonus is %g%%.\n\n", (getDamageFactor() - 1) * 100);
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Damage bonus is %g%%.\n\n", (getDamageFactor() - 1) * 100);
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Damage bonus is %g%%.\n\n", (getDamageFactor() - 1) * 100);
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		disp_legend_desc = "LEGENDARY UPGRADE: after agent does not execute\n"
 				   "successful melee attacks for a while, next\n"

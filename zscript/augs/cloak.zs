@@ -8,10 +8,9 @@ class DD_Aug_Cloak : DD_Augmentation
 		return state ? tex_on : tex_off;
 	}
 
-
 	override int get_base_drain_rate()
 	{
-		return (290 - 35 * (getRealLevel() - 1)) * (blinktimer == 0 ? 1 : 0.5) * (owner.bISMONSTER ? 0.35 : 1);
+		return (290 - 35 * (getRealLevel() - 1)) * (blinktimer == 0 ? 1 : 0.5) * (owner && owner.bISMONSTER ? 0.35 : 1);
 	}
 
 	override void install()
@@ -24,16 +23,16 @@ class DD_Aug_Cloak : DD_Augmentation
 			    "with their surrounding environment, rendering them\n"
 			    "effectively invisible to observation by organic hostiles.\n"
 			    "Attacking by any means breaks invisibility by a brief\n"
-			    "moment.\n\n"
-			    "TECH ONE: Power drain is normal, invisiblity recovers\n"
-			    "slowly.\n\n"
-			    "TECH TWO: Power drain is reduced slightly, invisibility\n"
-			    "recovers faster.\n\n"
-			    "TECH THREE: Power drain is reduced moderately,\n"
-			    "invisibility recovers fast.\n\n"
-			    "TECH FOUR: Power drain is reduced significantly,\n"
-			    "invisibility restores almost instantly.\n\n";
-			    "Energy Rate: 400-250 Units/Minute\n\n";
+			    "moment.\n\n";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Invisibility restores after %.2gs.\nEnergy rate is %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Invisibility restores after %.2gs.\nEnergy rate is %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Invisibility restores after %.2gs.\nEnergy rate is %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Invisibility restores after %.2gs.\nEnergy rate is %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
+		_level = 1;
 
 		disp_legend_desc = "LEGENDARY UPGRADE: Augmentation recieves\n"
 				   "ability to make holograms within certain proximity\n"

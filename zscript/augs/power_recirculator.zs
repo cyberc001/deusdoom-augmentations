@@ -7,8 +7,6 @@ class DD_Aug_PowerRecirculator : DD_Augmentation
 		return ui_tex;
 	}
 
-	override int get_base_drain_rate(){ return 10; }
-
 	override void install()
 	{
 		super.install();
@@ -19,17 +17,17 @@ class DD_Aug_PowerRecirculator : DD_Augmentation
 			    "polianilene circuits, plugged directly into cell membranes\n"
 			    "that allow nanite particles to interconnect\n"
 			    "electronically without leaving their host cells.\n"
-			    "Augmentation works passively.\n"
-			    "TECH ONE: Power drain of augmentations is reduced\n"
-			    "slightly.\n\n"
-			    "TECH TWO: Power drain of augmentations is reduced\n"
-			    "moderately.\n\n"
-			    "TECH THREE: Power drain of augmentations is reduced\n"
-			    "by a good amount.\n\n"
-			    "TECH FOUR: Power drain of augmentations is reduced\n"
-			    "significantly.\n\n"
-			    "Energy Rate: 10 Units/Minute\n\n";
-
+			    "Augmentation works passively.\n\n";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Energy cost reduction is %g%%.\n\n", getPowerSaveFactor() * 100);
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Energy cost reduction is %g%%.\n\n", getPowerSaveFactor() * 100);
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Energy cost reduction is %g%%.\n\n", getPowerSaveFactor() * 100);
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Energy cost reduction is %g%%.\n\n", getPowerSaveFactor() * 100);
+		_level = 1;
+			
 		disp_legend_desc = "LEGENDARY UPGRADE: polianilene circuits\n"
 				   "are improved, gaining ability to capture\n"
 				   "energy released from forming molecular\n"

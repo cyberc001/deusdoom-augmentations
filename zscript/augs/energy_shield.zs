@@ -20,16 +20,18 @@ class DD_Aug_EnergyShield : DD_Augmentation
 		disp_name = "Energy Shield";
 		disp_desc = "Polyanilene capacitors below the skin absorb heat and\n"
 			    "electricity, reducing the damage received from flame,\n"
-			    "electrical, and plasma attacks.\n\n"
-			    "TECH ONE: Damage from energy attacks is reduced\n"
-			    "slightly.\n\n"
-			    "TECH TWO: Damage from energy attacks is reduced\n"
-			    "moderately.\n\n"
-			    "TECH THREE: Damage from energy attacks is reduced\n"
-			    "significantly.\n\n"
-			    "TECH FOUR: An agent is nearly invulnerable to damage\n"
-			    "from energy attacks.\n\n"
-			    "Energy Rate: 70 Units/Minute\n\n";
+			    "electrical, and plasma attacks.\n\n";
+
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Damage reduction is %g%%.\n\n", round(getProtectionFactor() * 100));
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		disp_legend_desc = "LEGENDARY UPGRADE: Heat absorbed by the capacitors\n"
 				   "is released back with some nanites that control it's\n"
