@@ -43,6 +43,3 @@ addkeysection "DeusDoom controls" DD_ControlsKF
 	addmenukey "Dash in held movement direction"				dd_dash
 		alias	dd_dash	"netevent dd_dash"
 		defaultbind Alt dd_dash
-	addmenukey "Toggle Gravitational field mode"				dd_gravfield_toggle
-		alias	dd_gravfield_toggle "netevent dd_gravfield_toggle"
-		defaultbind G dd_gravfield_toggle

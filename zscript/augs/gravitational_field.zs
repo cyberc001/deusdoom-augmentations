@@ -6,9 +6,7 @@ class DD_Aug_GravitationalField : DD_Augmentation
 
 	override TextureID get_ui_texture(bool state)
 	{
-		return !state ? tex_off
-		      : mode  ? tex_alt
-		      : tex_on;
+		return !state ? tex_off : tex_on;
 	}
 
 	override int get_base_drain_rate(){ return 100; }
@@ -20,122 +18,120 @@ class DD_Aug_GravitationalField : DD_Augmentation
 		id = 2;
 		disp_name = "Gravitational field";
 		disp_desc = "Nanoscale gravity field generators work in a pattern\n"
-			    "that constantly pushes away everything at little force.\n\n"
-			    "TECH ONE: Objects are pushed a little.\n\n"
-			    "TECH TWO: Objects are pushed more at further\n"
-			    "distance.\n\n"
-			    "TECH THREE: Objects are pushed away significantly\n"
-			    "faster and further.\n\n"
-			    "TECH FOUR: All but the fastest and furthest objects\n"
-			    "are violently pushed away.\n\n"
-			    "Energy Rate: 100 Units/Minute\n\n";
-
-		disp_legend_desc = "LEGENDARY UPGRADE: gains a second mode\n"
-				      "that reverses gravity generation,\n"
-				      "pulling objects towards the agent\n"
-				      "instead of pushing them. Also improves\n"
-				      "overall performance of the augmentation.";
+			    "and constantly slow down incoming projectiles.\n\n";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH ONE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH ONE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH ONE: Range %g, speed reduction %g%%.\n\n", getRange(), getSpeedReduction() * 100);
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		slots_cnt = 2;
 		slots[0] = Subdermal1;
 		slots[1] = Subdermal2;
-
-		can_be_legendary = true;
-
-		mode = 0;
 	}
 
 	override void UIInit()
 	{
 		tex_off = TexMan.CheckForTexture("EMPSHLD0");
 		tex_on = TexMan.CheckForTexture("EMPSHLD1");
-		tex_alt = TexMan.CheckForTexture("EMPSHLD2");
 	}
 
 	// ------------------
 	// Internal functions
 	// ------------------
-
-	protected double getMaxVel() { return 10 + 5 * (getRealLevel() - 1) + (isLegendary() ? 15 : 0); }
-	protected double getPushForce() { return 80 + 120 * (getRealLevel() - 1) + (isLegendary() ? 50 : 0); }
-	protected double getRange() { return 160 + 50 * (getRealLevel() - 1) + (isLegendary() ? 70 : 0); }
-
-	int mode;	// 0 - push, 1 - pull
+	
+	protected double getSpeedReduction() { return 0.5 + 0.07 * (getRealLevel() - 1); }
+	protected double getMinSpeed() { return 2 - 0.35 * (getRealLevel() - 1); }
+	protected double getRange() { return 85 + 15 * (getRealLevel() - 1); }
 
 	// -------------
 	// Engine events
 	// -------------
 
-	const smoke_gfx_time = 20;
-	int smoke_gfx_timer;
+	array<Actor> affected_projectiles;
+	array<double> prev_speeds;
+
+	private vector3 rescaleVector(vector3 vec, double new_length)
+	{
+		vector3 norm = (vec.length() == 0) ? vec : vec / vec.length();
+		return norm * new_length;
+	}
+
+	const gfx_sph_roff = 0.08;
+	const gfx_line_roff = 1;
+	const gfx_line_step = 5;
+	private void doGFX()
+	{
+		double radius = getRange() - gfx_sph_roff * 100;
+		for(double pit = -66; pit < 66; pit += 11){
+			for(double ang = 0; ang < 360; ang += 12){
+				vector3 off = (AngleToVector(ang, cos(pit)), -sin(pit));
+				off.x += frandom(-gfx_sph_roff, gfx_sph_roff);
+				off.y += frandom(-gfx_sph_roff, gfx_sph_roff);
+				off.z += frandom(-gfx_sph_roff, gfx_sph_roff);
+				owner.A_SpawnParticle(0x80808080, flags: SPF_NOTIMEFREEZE, lifetime: 5, size: 2, xoff: radius * off.x, yoff: radius * off.y, zoff: owner.height * 3./5 + radius * off.z, velx: owner.vel.x, vely: owner.vel.y, velz: owner.vel.z, startalphaf: 0.5);
+			}
+		}
+
+		for(uint i = 0; i < affected_projectiles.size(); ++i){
+			vector3 pt = owner.pos + (0, 0, owner.height * 3./5);
+			vector3 dir = affected_projectiles[i].pos - pt;
+			uint steps = dir.length() / gfx_line_step;
+			if(dir.length() > 0) dir /= dir.length();
+			dir *= gfx_line_step;
+			pt -= owner.pos;
+			for(uint j = 0; j < steps; ++j, pt += dir){
+				owner.A_SpawnParticle(0x80808080, flags: SPF_NOTIMEFREEZE, lifetime: 1, size: 5, xoff: pt.x + frandom(-gfx_line_roff, gfx_line_roff), yoff: pt.y + frandom(-gfx_line_roff, gfx_line_roff), zoff: pt.z + frandom(-gfx_line_roff, gfx_line_roff), velx: owner.vel.x, vely: owner.vel.y, velz: owner.vel.z, startalphaf: 0.5);
+			}
+		}	
+	}
 
 	override void tick()
 	{
 		super.tick();
-
-		if(!enabled)
-			return;
-		if(!owner)
-			return;
-
-		Actor obj;
-		BlockThingsIterator it = BlockThingsIterator.Create(owner, getRange());
-		while(it.next())
-		{
-			obj = it.thing;
-			if(owner.distance2D(obj) > getRange())
-				continue;
-			if(obj.vel.length() > getMaxVel())
-				continue;
-
-			vector3 push_vec = owner.vec3To(obj);
-			double push_vec_ln = push_vec.length();
-			if(push_vec_ln == 0)
-				continue;
-
-			push_vec /= push_vec_ln;
-			push_vec *= getPushForce();
-			if(isLegendary() && mode)
-				push_vec *= -0.6;
-			push_vec /= obj.mass;
-
-			obj.A_ChangeVelocity(push_vec.x, push_vec.y, push_vec.z);
-		}
-
-		// do GFX
-		if(smoke_gfx_timer > 0)
-			--smoke_gfx_timer;
-		else
-		{
-			smoke_gfx_timer = smoke_gfx_time;
-			vector2 dir = (19 + 7.5 * (getRealLevel() - 1), 0);
-			int smoke_cnt = 8 + 6 * (getRealLevel() - 1);
-			for(int i = 0; i < smoke_cnt; ++i){ 
-				Spawn("DD_GravitationalField_SmokeGFX", owner.pos).A_ChangeVelocity(dir.x + owner.vel.x, dir.y + owner.vel.y);
-				dir = RotateVector(dir, 360 / smoke_cnt);
+		for(uint i = 0; i < affected_projectiles.size(); ++i)
+			if(!affected_projectiles[i]){
+				affected_projectiles.delete(i);
+				prev_speeds.delete(i);
+				--i; continue;
+			}
+			
+		for(uint i = 0; i < affected_projectiles.size(); ++i){
+			if(!enabled || owner.Distance3D(affected_projectiles[i]) - affected_projectiles[i].radius > getRange()){
+				vector3 new_vel = rescaleVector(affected_projectiles[i].vel, prev_speeds[i]);
+				affected_projectiles[i].A_ChangeVelocity(new_vel.x, new_vel.y, new_vel.z, CVF_REPLACE);
+				affected_projectiles.delete(i);
+				prev_speeds.delete(i);
+				--i; continue;
 			}
 		}
-	}
-}
 
-class DD_GravitationalField_SmokeGFX : Actor
-{
-	default
-	{
-		+NOBLOCKMAP
-		+NOGRAVITY
-		+NOTELEPORT
+		if(!enabled || !owner)
+			return;
+		doGFX();
 
-		XScale 0.65;
-		YScale 0.65;
+		let ddevh = DD_AugsEventHandler(StaticEventHandler.Find("DD_AugsEventHandler"));
+		for(uint i = 0; i < ddevh.proj_list.size(); ++i)
+		{
+			Actor proj = ddevh.proj_list[i];
+			if(!proj){
+				ddevh.proj_list.delete(i); --i; continue;
+			}
+			if(proj.target == owner || owner.Distance3D(proj) - proj.radius > getRange() || affected_projectiles.find(proj) != affected_projectiles.size())
+				continue;
+			affected_projectiles.push(proj);
+			prev_speeds.push(proj.vel.length());
+			double _speed = proj.vel.length() * (1 - getSpeedReduction());
 
-		Alpha 0.7;
-	}
-
-	states
-	{
-		Spawn:
-			DDFX JKLMN 3 { if (vel.x == 0 || vel.y == 0) Destroy(); }
-			Stop;
+			if(_speed < getMinSpeed())
+				_speed = getMinSpeed();
+			vector3 new_vel = rescaleVector(proj.vel, _speed);
+			proj.A_ChangeVelocity(new_vel.x, new_vel.y, new_vel.z, CVF_REPLACE);
+		}
 	}
 }

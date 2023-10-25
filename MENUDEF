@@ -16,8 +16,6 @@ AddOptionMenu "DD_Controls"
 	Control "Deactivate all augmentations",				dd_togg_aug_all_off
 	StaticText "Agility enhancement augmentation", Purple
 	Control "Dash in held movement direction",			dd_dash
-	StaticText "Gravitational field augmentation", Purple
-	Control "Toggle mode",						dd_gravfield_toggle
 	StaticText "Targeting augmentation", Purple
 }
 
