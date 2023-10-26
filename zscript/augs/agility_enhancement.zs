@@ -6,8 +6,6 @@ struct DD_Aug_AgilityEnhancement_Queue
 	int vwheight_timer;
 	double vwheight_prev;
 	double vwheight_delta;
-
-	int falldmg_immune_timer;
 }
 class DD_Aug_AgilityEnhancement : DD_Augmentation
 {
@@ -17,7 +15,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 	DD_Aug_AgilityEnhancement_Queue queue;
 	ui bool mov_keys_held[4];
 	// amount of ticks passed since a key was pressed last time,
-	// used to engage dashses.
+	// used to engage dash.
 	// 0 - forward, 1 - backward, 2 - left, 3 - right, 4 - up
 	ui int mov_keys_timer[5];
 
@@ -25,11 +23,17 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 	const vwheight_time = 20;
 	const vwheight_time_coff = 0.30;
 
-	const falldmg_immune_time = 20;
-
 	bool use_doubletap_scheme; // keeps the value of dd_dash_on_doubletap CVAR between toggles
 	int dash_tap_time; // also keeps a value of dd_dash_doubletap_timer CVAR
 	bool dash_held;
+
+	const wall_climb_range = 32;
+	const wall_climb_keep_range = 70;
+	bool climbing;
+	bool prev_climbing;
+	bool climb_move[4];
+
+	const gap_squeeze_vel_thres = 1;
 
 	override TextureID get_ui_texture(bool state)
 	{
@@ -47,26 +51,23 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 		disp_desc = "The necessary muscle movements for quick and precise\n"
 			    "body motions determined continuously with reactive\n"
 			    "kinematics equations produced by embedded\n"
-			    "nanocomputers, allowing an agent to quickly change\n"
-			    "their momentum even while in air.\n\n"
-			    "TECH ONE: Deceleration is a bit faster, agent can\n"
-			    "do short dashes and double jumps.\n\n"
-			    "TECH TWO: Deceleration is faster, agent can do\n"
-			    "longer dashes and double jumps.\n\n"
-			    "TECH THREE: Decelration is significantly faster and\n"
-			    "agent can perform stunningly long dashes.\n\n"
-			    "TECH FOUR: Agent decelerates almost instantly and\n"
-			    "can cross entire rooms in one leap.\n\n"
-			    "Energy Rate: 55 Units/Minute\n\n";
+			    "nanocomputers, enhancing agent's ability to do\n"
+			    "demanding body movements and improving\n"
+			    "deceleration.\n\n";
 
-		disp_legend_desc = "LEGENDARY UPGRADE: Agent leaps so quick\n"
-				   "it seems they are teleporting.\n"
-				   "They also can slow down their fall.\n";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Deceleration rate is %.2g%%.\n", getDecelerateFactor() * 100) .. "Agent can perform a dash, even in the air.\n\n";
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Deceleration rate is %.2g%%.\n", getDecelerateFactor() * 100) .. "Agent can climb flat walls.\n\n";
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Deceleration rate is %.3g%%.\n", getDecelerateFactor() * 100) .. "Agent takes less damage while dashing.\n\n";
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Deceleration rate is %.3g%%.\n", getDecelerateFactor() * 100) .. "Agent cannot collide with foes while dashing.\n\n";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		slots_cnt = 1;
 		slots[0] = Legs;
-
-		can_be_legendary = true;
 	}
 
 	override void UIInit()
@@ -75,31 +76,15 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 		tex_on = TexMan.CheckForTexture("SILENT1");
 	}
 
-
-	const levitation_velz_cap = 1.0;
-	const levitation_velz_deacc = 15.0;
-
-	clearscope double getDeaccFactor()
-	{
-		return 0.2 + 0.35 * (getRealLevel() - 1);
-	}
-	clearscope double getDashVel()
-	{
-		if(isLegendary())	return 350;
-		else		return 26 + 13 * (getRealLevel() - 1);
-	}
-	protected clearscope int getDashCD()
-	{
-		return 60 - 8 * (getRealLevel() - 1) - (isLegendary() ? 14 : 0);
-	}
-	protected double getImpactNegationFactor() { return 0.25 + getRealLevel() * 0.15; }
-	protected double getImpactThreshold() { return 50 + getRealLevel() * 25; }
-
+	clearscope double getDecelerateFactor() { return 0.3 + 0.35 * (getRealLevel() - 1); }
+	clearscope double getDashVel() { return 22 + 7 * (getRealLevel() - 1); }
+	protected clearscope int getDashCD() { return 48 - 9 * (getRealLevel() - 1); }
 
 	override void toggle()
 	{
 		super.toggle();
-
+		climbing = false;
+		owner.bTHRUACTORS = false;
 		if(owner && owner.player){
 			use_doubletap_scheme = CVar.getCVar("dd_dash_on_doubletap", owner.player).getFloat();
 			dash_tap_time = CVar.getCVar("dd_dash_doubletap_timer", owner.player).getInt();
@@ -110,11 +95,55 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 	// Events
 	// ------
 
+	override double getSpeedFactor() { return climbing ? 0 : 1; }
+	protected double getClimbingVelocity() { return 2 + 1 * (getRealLevel() - 2); }
+
 	override void tick()
 	{
 		super.tick();
-		if(!owner || !(owner is "PlayerPawn"))
+		if(!owner)
 			return;
+
+		// Wall climbing
+		if(climbing != prev_climbing){
+			console.printf(climbing ? "Now climbing" : "Stopped climbing");
+			prev_climbing = climbing;
+		}
+		if(climbing){
+			owner.A_ChangeVelocity(0, 0, -owner.vel.z);
+			vector3 dir = (Actor.AngleToVector(owner.angle, cos(owner.pitch)), -sin(owner.pitch));
+			let aim_tracer = new("DD_AimTracer");
+			aim_tracer.source = owner;
+			aim_tracer.trace(owner.pos + (0, 0, owner.player.viewHeight), owner.curSector, dir, wall_climb_keep_range, 0);
+
+			for(double height_mod = 0; (!aim_tracer.hit_wall || !aim_tracer.hit_line) && height_mod <= owner.player.viewHeight * 3 / 2 + 15; height_mod += owner.player.viewHeight / 2){
+				aim_tracer = new("DD_AimTracer");
+				aim_tracer.source = owner;
+				aim_tracer.trace(owner.pos + (0, 0, owner.player.viewHeight - height_mod), owner.curSector, dir, wall_climb_keep_range, 0);
+			}
+
+			if(!aim_tracer.hit_wall || !aim_tracer.hit_line)
+				climbing = false;
+			else{
+				if(climb_move[0]) owner.A_ChangeVelocity(0, 0, getClimbingVelocity());
+				if(climb_move[1]) owner.A_ChangeVelocity(0, 0, -getClimbingVelocity());
+				vector2 side_dir = aim_tracer.hit_line.delta;
+				if(side_dir.length()) side_dir /= side_dir.length();
+				side_dir *= getClimbingVelocity() * (aim_tracer.hit_front_side ? 1 : -1);
+
+				double sign_corr = side_dir.x * owner.vel.x > 0 ? 1 : -1;
+				if(side_dir.x > 0 && side_dir.x < owner.vel.x * sign_corr) side_dir.x = owner.vel.x;
+				if(side_dir.x < 0 && side_dir.x > owner.vel.x * sign_corr) side_dir.x = owner.vel.x;
+
+				sign_corr = side_dir.y * owner.vel.y > 0 ? 1 : -1;
+				if(side_dir.y > 0 && side_dir.y < owner.vel.y * sign_corr) side_dir.y = owner.vel.y;
+				if(side_dir.y < 0 && side_dir.y > owner.vel.y * sign_corr) side_dir.y = owner.vel.y;
+
+				if(climb_move[2]) owner.A_ChangeVelocity(-side_dir.x, -side_dir.y, owner.vel.z, CVF_REPLACE);
+				if(climb_move[3]) owner.A_ChangeVelocity(side_dir.x, side_dir.y, owner.vel.z, CVF_REPLACE);
+				if(!climb_move[2] && !climb_move[3]) owner.A_ChangeVelocity(0, 0, owner.vel.z, CVF_REPLACE);
+			}
+		}
 
 		// View height change handling
 		if(queue.vwheight_timer > 0){
@@ -125,25 +154,21 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 			else
 				owner.player.viewHeight += queue.vwheight_delta / (vwheight_time * (1 - vwheight_time_coff));
 
-			if(queue.vwheight_timer == 0)
+			if(getRealLevel() > 3)
+				owner.bTHRUACTORS = true;
+
+			if(queue.vwheight_timer == 0){
 				owner.player.viewHeight = queue.vwheight_prev;
+				owner.bTHRUACTORS = false;
+			}
 		}
 		if(!enabled)
 			return;
 
-		// preventing HDest incap from happening
-		if(DD_ModChecker.isLoaded_HDest() && DD_PatchChecker.isLoaded_HDest() && queue.falldmg_immune_timer > 0){
-			Class<Actor> lv_cls = ClassFinder.findActorClass("DD_HDLastVelCorrector");
-			Actor lastvelcor = spawn(lv_cls);
-			lastvelcor.target = owner;
-			lastvelcor.postBeginPlay();
-			lastvelcor.destroy();
-		}
-
 		if(abs(queue.deacc) > 0)
 		{
 			if(abs(owner.vel.x) > queue.deacc){
-				if(owner.warp(owner, owner.vel.x, owner.vel.y, owner.vel.z, 0, WARPF_TESTONLY)){
+				if(owner.warp(owner, owner.vel.x, owner.vel.y, owner.vel.z, 0, WARPF_TESTONLY) || climbing){
 					owner.A_ChangeVelocity((owner.vel.x > 0 ? -1 : 1)*queue.deacc, 0, 0);
 					owner.warp(owner, -owner.vel.x, -owner.vel.y, -owner.vel.z, 0, WARPF_TESTONLY);
 				}
@@ -151,7 +176,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 			else
 				owner.A_ChangeVelocity(0, owner.vel.y, owner.vel.z, CVF_REPLACE);
 			if(abs(owner.vel.y) > queue.deacc){
-				if(owner.warp(owner, owner.vel.x, owner.vel.y, owner.vel.z, 0, WARPF_TESTONLY)){
+				if(owner.warp(owner, owner.vel.x, owner.vel.y, owner.vel.z, 0, WARPF_TESTONLY) || climbing){
 					owner.A_ChangeVelocity(0, (owner.vel.y > 0 ? -1 : 1)*queue.deacc, 0);
 					owner.warp(owner, -owner.vel.x, -owner.vel.y, -owner.vel.z, 0, WARPF_TESTONLY);
 				}
@@ -165,74 +190,72 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 		for(uint i = 0; i < 5; ++i)
 		{
 			if(dash_cd == 0 && queue.dashvel[i].length() > 0){
-				if(!isLegendary())
-				{
-					if(DD_ModChecker.isLoaded_HDest())
-						queue.falldmg_immune_timer = falldmg_immune_time;
-
-					owner.A_ChangeVelocity(queue.dashvel[i].x, queue.dashvel[i].y, queue.dashvel[i].z, CVF_RELATIVE);
-					dash_cd = getDashCD();
-					if(queue.dashvel[i].z == 0 && queue.vwheight_timer == 0){
-						queue.vwheight_prev = owner.player.viewHeight;
-						queue.vwheight_timer = vwheight_time;
-						queue.vwheight_delta = owner.player.viewHeight * 0.8;
-					}
-				}
-				else
-				{
-					dash_cd = getDashCD();
-
-					double warpstep = 8;
-					double dist = warpstep / ceil(queue.dashvel[i].length());
-					for(uint _try = 0; _try < ceil(queue.dashvel[i].length()); _try += warpstep)
-					{
-						if(!owner.warp(owner, queue.dashvel[i].x * dist,
-								 -queue.dashvel[i].y * dist,
-								  queue.dashvel[i].z * dist,
-								0, WARPF_USECALLERANGLE))
-							break;
-					}
+				owner.A_ChangeVelocity(queue.dashvel[i].x, queue.dashvel[i].y, queue.dashvel[i].z, CVF_RELATIVE);
+				dash_cd = getDashCD();
+				if(queue.dashvel[i].z == 0 && queue.vwheight_timer == 0){
+					queue.vwheight_prev = owner.player.viewHeight;
+					queue.vwheight_timer = vwheight_time;
+					queue.vwheight_delta = owner.player.viewHeight * 0.8;
 				}
 			}
 			queue.dashvel[i] = (0, 0, 0);
 		}
 	}
 
+	protected double getProtectionFactor()
+	{
+		return GetRealLevel() > 2 ? 0.3 : 0;
+	}
 	override void ownerDamageTaken(int damage, Name damageType, out int newDamage,
 					Actor inflictor, Actor source, int flags)
 	{
-		// Hdest compat for preventing player from taking "falling" damage when dashing
-		if(enabled && damageType == "falling"){
-			if(damage <= getImpactThreshold() || queue.falldmg_immune_timer > 0)
-				newDamage = 0;
-			else
-				newDamage = damage * (1 - getImpactNegationFactor());
+		if(!enabled)
+			return;
 
-			Class<Actor> st_cls = ClassFinder.findActorClass("DD_HDStunTaker");
-			Actor stuntaker = spawn(st_cls);
-			stuntaker.target = owner;
+		if(queue.vwheight_timer > 0 && getRealLevel() > 2)
+		{
+			newDamage = damage * (1 - getProtectionFactor());
+			DD_AugsHolder aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
+			aughld.absorbtion_msg = String.Format("%.0f%% ABSORB", getProtectionFactor() * 100);
+			aughld.absorbtion_msg_timer = 35 * 1;
+			aughld.doGFXResistance();
 		}
 	}
-
 
 	override void UITick()
 	{
 		for(uint i = 0; i < 5; ++i)
-		{
 			if(use_doubletap_scheme && mov_keys_timer[i] <= dash_tap_time)
 				++mov_keys_timer[i];
-		}
 	}
 
 	override bool inputProcess(InputEvent e)
 	{
 		if(e.type == InputEvent.Type_KeyDown)
 		{
-			if(isLegendary() && KeyBindUtils.checkBind(e.keyScan, "+jump"))
-			{ // levitating in air
-				EventHandler.sendNetworkEvent("dd_levitate", 1);
+			/* Climbing */
+			if(KeyBindUtils.checkBind(e.keyScan, "+use") && getRealLevel() > 1){
+				if(climbing)
+					EventHandler.sendNetworkEvent("dd_climb", 0);
+				else{
+					vector3 dir = (Actor.AngleToVector(owner.angle, cos(owner.pitch)), -sin(owner.pitch));
+					let aim_tracer = new("DD_AimTracer");
+					aim_tracer.source = owner;
+					aim_tracer.trace(owner.pos + (0, 0, owner.player.viewHeight), owner.curSector, dir, wall_climb_range, 0);
+					if(aim_tracer.hit_wall && aim_tracer.hit_line
+						&& aim_tracer.hit_line.activation == 0)
+						EventHandler.sendNetworkEvent("dd_climb", 1);
+				}
 			}
 
+			if(climbing){
+				if(KeyBindUtils.checkBind(e.keyScan, "+forward")) EventHandler.sendNetworkEvent("dd_climb", 2);
+				if(KeyBindUtils.checkBind(e.keyScan, "+back")) EventHandler.sendNetworkEvent("dd_climb", 3);
+				if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")) EventHandler.sendNetworkEvent("dd_climb", 4);
+				if(KeyBindUtils.checkBind(e.keyScan, "+moveright")) EventHandler.sendNetworkEvent("dd_climb", 5);
+			}
+
+			/* Deceleration */
 			if(KeyBindUtils.checkBind(e.keyScan, "+forward")) mov_keys_held[0] = true;
 			if(KeyBindUtils.checkBind(e.keyScan, "+back")) mov_keys_held[1] = true;
 			if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")) mov_keys_held[2] = true;
@@ -241,6 +264,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 			if(mov_keys_held[0] || mov_keys_held[1] || mov_keys_held[2] || mov_keys_held[3])
 				EventHandler.sendNetworkEvent("dd_grip", 0);
 
+			/* Dashing */
 			if(use_doubletap_scheme)
 			{
 				if(KeyBindUtils.checkBind(e.keyScan, "+forward"))
@@ -301,19 +325,23 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 				}
 			}
 		}
-		if(e.type == InputEvent.Type_KeyUp)
+		else if(e.type == InputEvent.Type_KeyUp)
 		{
-			if(isLegendary() && KeyBindUtils.checkBind(e.keyScan, "+jump"))
-			{ // stopping levitating in air
-				EventHandler.sendNetworkEvent("dd_levitate", 0);
-			}
-
+			/* Deceleration */
 			if(KeyBindUtils.checkBind(e.keyScan, "+forward")) mov_keys_held[0] = false;
 			if(KeyBindUtils.checkBind(e.keyScan, "+back")) mov_keys_held[1] = false;
 			if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")) mov_keys_held[2] = false;
 			if(KeyBindUtils.checkBind(e.keyScan, "+moveright")) mov_keys_held[3] = false;
 			if(!mov_keys_held[0] && !mov_keys_held[1] && !mov_keys_held[2] && !mov_keys_held[3] && enabled)
 					EventHandler.sendNetworkEvent("dd_grip", 1);
+
+			/* Climbing */
+			if(KeyBindUtils.checkBind(e.keyScan, "+forward")) EventHandler.sendNetworkEvent("dd_climb", 6);
+			if(KeyBindUtils.checkBind(e.keyScan, "+back")) EventHandler.sendNetworkEvent("dd_climb", 7);
+			if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")) EventHandler.sendNetworkEvent("dd_climb", 8);
+			if(KeyBindUtils.checkBind(e.keyScan, "+moveright")) EventHandler.sendNetworkEvent("dd_climb", 9);
+
+			/* Dashing */
 			if(!use_doubletap_scheme)
 			{
 				if(KeyBindUtils.checkBind(e.keyScan, "+forward"))

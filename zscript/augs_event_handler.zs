@@ -30,48 +30,6 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 			plr.addInventory(aughld);
 		else
 			aughld.destroy();
-
-			//aughld.installAug(DD_Aug_PowerRecirculator(Inventory.Spawn("DD_Aug_PowerRecirculator")));
-			//aughld.installAug(DD_Aug_EnvironmentalResistance(Inventory.Spawn("DD_Aug_EnvironmentalResistance")));
-			//aughld.installAug(DD_Aug_BallisticProtection(Inventory.Spawn("DD_Aug_BallisticProtection")));
-			//aughld.installAug(DD_Aug_Cloak(Inventory.Spawn("DD_Aug_Cloak")));
-			//aughld.installAug(DD_Aug_RadarTransparency(Inventory.Spawn("DD_Aug_RadarTransparency")));
-			//aughld.installAug(DD_Aug_GravitationalField(Inventory.Spawn("DD_Aug_GravitationalField")));
-			//aughld.installAug(DD_Aug_CombatStrength(Inventory.Spawn("DD_Aug_CombatStrength")));
-			//aughld.installAug(DD_Aug_SpeedEnhancement(Inventory.Spawn("DD_Aug_SpeedEnhancement")));
-			//aughld.installAug(DD_Aug_AgilityEnhancement(Inventory.Spawn("DD_Aug_AgilityEnhancement")));
-			//aughld.installAug(DD_Aug_EnergyShield(Inventory.Spawn("DD_Aug_EnergyShield")));
-			//let a = DD_Aug_MicrofibralMuscle(Inventory.Spawn("DD_Aug_MicrofibralMuscle"));
-			//plr.addInventory(a);
-			//aughld.installAug(a);
-			//aughld.installAug(DD_Aug_Regeneration(Inventory.Spawn("DD_Aug_Regeneration")));
-			//aughld.installAug(DD_Aug_SyntheticHeart(Inventory.Spawn("DD_Aug_SyntheticHeart")));
-			//aughld.installAug(DD_Aug_AggressiveDefenseSystem(Inventory.Spawn("DD_Aug_AggressiveDefenseSystem")));
-			//aughld.installAug(DD_Aug_SpyDrone(Inventory.Spawn("DD_Aug_SpyDrone")));
-			//aughld.installAug(DD_Aug_Targeting(Inventory.Spawn("DD_Aug_Targeting")));
-			//aughld.installAug(DD_Aug_VisionEnhancement(Inventory.Spawn("DD_Aug_VisionEnhancement")));
-	}
-
-	override void worldTick()
-	{
-		for(uint i = 0; i < levitating_plrs.size(); ++i)
-		{
-			if(levitating_plrs[i].vel.z == 0)
-			{
-				if(levitating_plrs_timer[i] > 0)
-					levitating_plrs_timer[i]--;
-				else{
-					levitating_plrs.delete(i);
-					levitating_plrs_timer.delete(i);
-					--i; continue;
-				}
-			}
-
-			if(-levitating_plrs[i].vel.z > DD_Aug_AgilityEnhancement.levitation_velz_cap)
-				levitating_plrs[i].A_ChangeVelocity(levitating_plrs[i].vel.x, levitating_plrs[i].vel.y,
-						min(-DD_Aug_AgilityEnhancement.levitation_velz_cap, levitating_plrs[i].vel.z + DD_Aug_AgilityEnhancement.levitation_velz_deacc),
-						CVF_REPLACE);
-		}
 	}
 
 	bool proj_damage_inflicted; // avoid stepping down more than one function
@@ -120,9 +78,6 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 			aughld.draw(e, DD_EventHandler(StaticEventHandler.Find("DD_EventHandler")), 301, 0);
 	}
 
-
-	array<PlayerPawn> levitating_plrs; // list of players currently levitating
-	array<int> levitating_plrs_timer; // timer of velocity equal to zero in order to remove players from levitating list
 
 	override void networkProcess(ConsoleEvent e)
 	{
@@ -195,14 +150,6 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 						hld.removeItem(item);
 				}
 			}
-
-			/*let upgrcan = DD_AugmentationUpgradeCanister(plr.mo.findInventory("DD_AugmentationUpgradeCanister"));
-			console.printf("%p", upgrcan);
-			let upgrcan_lgnd = DD_AugmentationUpgradeCanisterLegendary(plr.mo.findInventory("DD_AugmentationUpgradeCanisterLegendary"));
-			if(DD_AugmentationUpgradeCanister.canConsume(plr.mo, e.args[0]))
-				DD_AugmentationUpgradeCanister.queueConsume(plr.mo, upgrcan, e.args[0]);
-			else if(DD_AugmentationUpgradeCanisterLegendary.canConsume(plr.mo, upgrcan_lgnd, e.args[0]))
-				DD_AugmentationUpgradeCanisterLegendary.queueConsume(plr.mo, upgrcan_lgnd, e.args[0]);*/
 		}
 		else if(e.name == "dd_drop_aug")
 		{
@@ -258,22 +205,51 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 				}
 			}
 		}
-		else if(e.name == "dd_grip")
-		{
-			DD_Aug_AgilityEnhancement agaug;
+		else if(e.name == "dd_grip"){
 			for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
 			{
 				if(aughld.augs[i] && aughld.augs[i] is "DD_Aug_AgilityEnhancement")
 				{
-					agaug = DD_Aug_AgilityEnhancement(aughld.augs[i]);
-					if(e.args[0])	agaug.queue.deacc = agaug.getDeaccFactor();
-					else		agaug.queue.deacc = 0.0;
+					let aug = DD_Aug_AgilityEnhancement(aughld.augs[i]);
+					if(e.args[0])	aug.queue.deacc = aug.getDecelerateFactor();
+					else		aug.queue.deacc = 0.0;
+					break;
+				}
+				else if(aughld.augs[i] && aughld.augs[i] is "DD_Aug_SpeedEnhancement")
+				{
+					let aug = DD_Aug_SpeedEnhancement(aughld.augs[i]);
+					if(e.args[0])	aug.queue.deacc = aug.getDecelerateFactor();
+					else		aug.queue.deacc = 0.0;
 					break;
 				}
 			}
 		}
-		else if(e.name == "dd_drone")
-		{
+		else if(e.name == "dd_climb"){
+			// 1st argument:
+			// 0/1 - disable/enable wall climbing
+			// 2-5 - start moving in a direction
+			// 6-9 - stop moving in a direction
+			for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
+			{
+				if(aughld.augs[i] && aughld.augs[i] is "DD_Aug_AgilityEnhancement")
+				{
+					let aug = DD_Aug_AgilityEnhancement(aughld.augs[i]);
+					switch(e.args[0]){
+						case 0: case 1:
+							aug.climbing = e.args[0];
+							break;
+						case 2: case 3: case 4: case 5:
+							aug.climb_move[e.args[0] - 2] = true;
+							break;
+						case 6: case 7: case 8: case 9:
+							aug.climb_move[e.args[0] - 6] = false;
+							break;
+					}
+					break;
+				}
+			}
+		}
+		else if(e.name == "dd_drone"){
 			DD_Aug_SpyDrone spyaug;
 			for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
 			{
@@ -294,20 +270,6 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 				}
 			}
 		}
-		else if(e.name == "dd_levitate")
-		{
-			if(e.args[0]){
-				levitating_plrs.push(plr.mo);
-				levitating_plrs_timer.push(10);
-			}
-			else{
-				uint ind = levitating_plrs.find(plr.mo);
-				if(ind != levitating_plrs.size()){
-					levitating_plrs.delete(ind);
-					levitating_plrs_timer.delete(ind);
-				}
-			}
-		}
 	}
 
 	override void consoleProcess(ConsoleEvent e) { _ConsoleProcess(e.name); }
@@ -318,7 +280,6 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 			let ddevh = DD_EventHandler(StaticEventHandler.Find("DD_EventHandler"));
 			if(!ddevh.wnd_nav.child_wnd){
 				ddevh.wndmgr.addWindow(ddevh, wnd_augs);
-				//ddevh.wndmgr.addWindow(ddevh, wnd_augs_sidepanel);
 				ddevh.wnd_nav.child_wnd = wnd_augs;
 				ddevh.wndmgr.addWindow(ddevh, ddevh.wnd_nav);
 			}
