@@ -24,13 +24,13 @@ class DD_Aug_SpeedEnhancement : DD_Augmentation
 			    "run and the height they can jump.\n\n";
 		_level = 1;
 		enabled = true;
-		disp_desc = disp_desc .. string.format("TECH ONE: Speed increase is %g%%.\nJump height increase is %g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100);
+		disp_desc = disp_desc .. string.format("TECH ONE: Speed increase is %g%%.\nJump height increase is %g%%.\nDeceleration rate is %.3g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100, getDecelerateFactor() * 100);
 		_level = 2;
-		disp_desc = disp_desc .. string.format("TECH TWO: Speed increase is %g%%.\nJump height increase is %g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100);
+		disp_desc = disp_desc .. string.format("TECH TWO: Speed increase is %g%%.\nJump height increase is %g%%.\nDeceleration rate is %.3g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100, getDecelerateFactor() * 100);
 		_level = 3;
-		disp_desc = disp_desc .. string.format("TECH THREE: Speed increase is %g%%.\nJump height increase is %g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100);
+		disp_desc = disp_desc .. string.format("TECH THREE: Speed increase is %g%%.\nJump height increase is %g%%.\nDeceleration rate is %.3g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100, getDecelerateFactor() * 100);
 		_level = 4;
-		disp_desc = disp_desc .. string.format("TECH FOUR: Speed increase is %g%%.\nJump height increase is %g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100);
+		disp_desc = disp_desc .. string.format("TECH FOUR: Speed increase is %g%%.\nJump height increase is %g%%.\nDeceleration rate is %.3g%%.\n\n", (getSpeedFactor() - 1) * 100, getJumpFactor() * 100, getDecelerateFactor() * 100);
 		_level = 1;
 		enabled = false;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
