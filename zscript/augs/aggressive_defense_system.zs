@@ -14,7 +14,7 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 		return state ? tex_on : tex_off;
 	}
 
-	override int get_base_drain_rate(){ return 60; }
+	override int get_base_drain_rate(){ return 65; }
 
 	protected void initProjection()
 	{
@@ -47,16 +47,18 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 			    "of objects fitting the electromagnetic threat profile of\n"
 			    "various missiles, like rockets or seeking missiles.\n"
 			    "These nanoparticles will prematurely detonate such\n"
-			    "objects prior to reaching the agent.\n\n"
-			    "TECH ONE: The range at which incoming projectiles\n"
-			    "are detonated is short, and cooldown is long.\n\n"
-			    "TECH TWO: The range at which detonation occurs is\n"
-			    "increased slightly and it goes off cooldown faster.\n\n"
-			    "TECH THREE: The range at which detonation occurs is\n"
-			    "increased moderately and it recharges even faster.\n\n"
-			    "TECH FOUR: Projectiles are detonated very afar and\n"
-			    "very often.\n\n"
-			    "Energy Rate: 60 Units/Minute\n\n";
+			    "objects prior to reaching the agent.\n\n";
+
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Effect radius is %g. Cooldown is %.2gs.\n\n", getRange(), getBaseCD() / 35.);
+		_level = 2;
+		disp_desc = disp_desc .. string.format("Effect radius is %g. Cooldown is %.2gs.\n\n", getRange(), getBaseCD() / 35.);
+		_level = 3;
+		disp_desc = disp_desc .. string.format("Effect radius is %g. Cooldown is %.2gs.\n\n", getRange(), getBaseCD() / 35.);
+		_level = 4;
+		disp_desc = disp_desc .. string.format("Effect radius is %g. Cooldown is %.2gs.\n\n", getRange(), getBaseCD() / 35.);
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		disp_legend_desc = "LEGENDARY UPGRADE: If the nanites forming\n"
 				   "see an opportunity to hack or change the\n"
@@ -87,14 +89,14 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 	clearscope double getRange()
 	{
 		if(getRealLevel() <= max_level)
-			return (140 + 20 * (getRealLevel() - 1)) * (owner.bIsMonster ? 0.6 : 1);
+			return (140 + 20 * (getRealLevel() - 1)) * (owner && owner.bIsMonster ? 0.6 : 1);
 		else
 			return (140 + 20 * (max_level - 1) + 10 * (getRealLevel() - max_level)) * (owner.bIsMonster ? 0.6 : 1);
 	}
 	int getBaseCD()
 	{
 		if(getRealLevel() <= max_level)
-			return (57 - 15 * (getRealLevel() - 1)) * (owner.bIsMonster ? 1.6 : 1);
+			return (57 - 15 * (getRealLevel() - 1)) * (owner && owner.bIsMonster ? 1.6 : 1);
 		else
 			return (57 - 15 * (max_level - 1) - 4 * (getRealLevel() - max_level)) * (owner.bIsMonster ? 1.6 : 1);
 	}
