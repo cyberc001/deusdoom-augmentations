@@ -171,21 +171,7 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 		}
 
 		// Augmentations-specific commands
-		// I don't wanna spam EventHandlers too often
-		else if(e.name == "dd_use_muscle")
-		{
-			DD_Aug_MicrofibralMuscle musaug;
-			for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
-			{
-				if(aughld.augs[i] && aughld.augs[i] is "DD_Aug_MicrofibralMuscle")
-				{
-					musaug = DD_Aug_MicrofibralMuscle(aughld.augs[i]);
-					musaug.queue.objwep = true;
-					break;
-				}
-			}
-		}
-		else if(e.name == "dd_vdash")
+		if(e.name == "dd_vdash")
 		{
 			DD_Aug_AgilityEnhancement agaug;
 			for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
@@ -245,6 +231,19 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 							aug.climb_move[e.args[0] - 6] = false;
 							break;
 					}
+					break;
+				}
+			}
+		}
+		else if(e.name == "dd_muscle"){
+			// 1st argument: 0/1 - stop/start subduing a target
+			for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
+			{
+				if(aughld.augs[i] && aughld.augs[i] is "DD_Aug_MicrofibralMuscle")
+				{
+					let aug = DD_Aug_MicrofibralMuscle(aughld.augs[i]);
+					if(e.args[0]) aug.subdueStart();
+					else aug.subdueEnd();
 					break;
 				}
 			}
