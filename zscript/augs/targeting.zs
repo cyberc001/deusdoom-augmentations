@@ -3,8 +3,6 @@ class DD_Aug_Targeting : DD_Augmentation
 	ui TextureID tex_off;
 	ui TextureID tex_on;
 
-	ui TextureID targ_frame; // frame background for rendering target's image
-
 	Actor last_target_obj; // Target to render info about
 
 	override TextureID get_ui_texture(bool state)
@@ -21,15 +19,19 @@ class DD_Aug_Targeting : DD_Augmentation
 		id = 17;
 		disp_name = "Targeting";
 		disp_desc = "Image-scaling and recognition provided by multiplexing\n"
-			    "the optic nerve with doped polyacetylene \"quantum wires\"\n"
-			    "delivers situational info about a target.\n\n"
-			    "TECH ONE: Distance and health level are provided.\n\n"
-			    "TECH TWO: Maximum health level of a target is provided.\n\n"
-			    "TECH THREE: Current state of the target and their\n"
-			    "targeted entity are provided additionaly.\n\n"
-			    "TECH FOUR: Also grants an ability to capture image of\n"
-			    "a target.\n\n"
-			    "Energy Rate: 40 Units/Minute\n\n";
+			    "the optic nerve with doped polyacetylene \"quantum\n"
+			    "wires\" delivers situational info about a target.\n\n";
+
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Damage bonus is %g%%.\nHealth is visible.\n\n", (getDamageFactor() - 1) * 100);
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Damage bonus is %g%%.\nMax health and active augmentations are visible.\n\n", (getDamageFactor() - 1) * 100);
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Damage bonus is %g%%.\nAll augmentations are visible.\n\n", (getDamageFactor() - 1) * 100);
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Damage bonus is %g%%.\nAugmentation levels are visible.\n\n", (getDamageFactor() - 1) * 100);
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		disp_legend_desc = "LEGENDARY UPGRADE: Augmentation firmly\n"
 				   "integrates with agent's mind, providing\n"
@@ -39,14 +41,11 @@ class DD_Aug_Targeting : DD_Augmentation
 
 		slots_cnt = 1;
 		slots[0] = Eyes;
-
-		can_be_legendary = true;
 	}
 	override void UIInit()
 	{
 		tex_off = TexMan.checkForTexture("TARG0");
 		tex_on = TexMan.checkForTexture("TARG1");
-		targ_frame = TexMan.checkForTexture("AUGUI20");
 	}
 
 	// ------------------
@@ -67,8 +66,21 @@ class DD_Aug_Targeting : DD_Augmentation
 		else
 			dname = ac.getTag("");
 		if(ac.bFriendly)
-			dname = dname .. " (friendly)";
+			dname = dname .. " [FRIENDLY])";
 		return dname;
+	}
+	clearscope static string getAugDisplayName(DD_Augmentation aug)
+	{
+		if(aug is "DD_Aug_AggressiveDefenseSystem") return "ADS";
+		else if(aug is "DD_Aug_AgilityEnhancement") return "Agility";
+		else if(aug is "DD_Aug_BallisticProtection") return "Ballistic";
+		else if(aug is "DD_Aug_CombatStrength") return "Strength";
+		else if(aug is "DD_Aug_AggressiveDefenseSystem") return "ADS";
+		else if(aug is "DD_Aug_EnergyShield") return "Energy";
+		else if(aug is "DD_Aug_GravitationalField") return "Grav. Field";
+		else if(aug is "DD_Aug_Regeneration") return "Regen";
+		else if(aug is "DD_Aug_SpeedEnhancement") return "Speed";
+		else return aug.disp_name;
 	}
 
 	// -------------
@@ -95,61 +107,50 @@ class DD_Aug_Targeting : DD_Augmentation
 		string ss = "look";
 	}
 
+	protected double getDamageFactor() { return 1.08 + 0.05 * getRealLevel(); }
+
+	override void ownerDamageDealt(int damage, Name damageType, out int newDamage,
+					Actor inflictor, Actor victim, int flags)
+	{
+		if(!enabled)
+			return;
+
+		newDamage = damage * getDamageFactor();
+	}
 
 	override void drawOverlay(RenderEvent e, DD_EventHandler hndl)
 	{
 		bool hud_dbg = false;
+		vector2 off = CVar_Utils.getOffset("dd_targeting_info_off");
+		off += (160, 0);
+
 		if(CVar_UTils.isHUDDebugEnabled())
 		{
-			vector2 off = CVar_Utils.getOffset("dd_targeting_info_off");
-			UI_Draw.str(hndl.aug_overlay_font_bold, "Monster", 0xFFFFFFFF,
-					4 + off.x, 22 + off.y, -0.35, -0.35);
-			// level 1: target range
-			UI_Draw.str(hndl.aug_overlay_font_bold, "Range 100 ft (1000 map units)",
-							0xFFFFFFFF, 4 + off.x, 28 + off.y, -0.35, -0.35);
-			// level 2: target max health
-			UI_Draw.str(hndl.aug_overlay_font_bold, "Health 10000\\10000",
-							0xFFFFFFFF, 4 + off.x, 34 + off.y, -0.35, -0.35);
-
-			// level 3: target state, it's target and master
-			UI_Draw.str(hndl.aug_overlay_font_bold, "Chasing DoomPlayer",
-							0xFFFFFFFF, 4 + off.x, 40 + off.y, -0.35, -0.35);
-
-			// level 4: target image
-			UI_Draw.texture(targ_frame,
-						4 + off.x, 51 + off.y,
-						50 + 2,
-						30 + 2);
+			UI_Draw.str(hndl.aug_overlay_font_bold, "Baron of Hell", 0xFFFFFFFF,
+					8 + off.x, 8 + off.y, -0.27, -0.27, UI_Draw_CenterText);
+			UI_Draw.str(hndl.aug_overlay_font_bold, "Health 500 | 1000",
+								0xFFFFFFFF, 8 + off.x, 13 + off.y, -0.27, -0.27, UI_Draw_CenterText);
+			UI_Draw.str(hndl.aug_overlay_font_bold, "All: <56> ADS (3) | [Speed] (2)",
+									0xFFFFFFFF, 8 + off.x, 18 + off.y, -0.27, -0.27, UI_Draw_CenterText);
 
 			hud_dbg = true;
 		}
-
 		if(!enabled)
 			return;
 
-		vector2 off = CVar_Utils.getOffset("dd_targeting_info_off");
 
 		if(!hud_dbg && last_target_obj && shouldDisplayObj(last_target_obj))
 		{
 			UI_Draw.str(hndl.aug_overlay_font_bold, getActorDisplayName(last_target_obj), 0xFFFFFFFF,
-					4 + off.x, 22 + off.y, -0.35, -0.35);
-			double target_dist = ((last_target_obj.pos - owner.pos).length()
-						- last_target_obj.radius - owner.radius);
-			double target_ft_dist = target_dist
-						/ 32 * 3.28; // see agressive defense system
-
+					8 + off.x, 8 + off.y, -0.27, -0.27, UI_Draw_CenterText);
 			int target_hp = last_target_obj.health;
-
-			UI_Draw.str(hndl.aug_overlay_font_bold, String.format("Range %.0f ft (%.0f map units)",
-							round(target_ft_dist), round(target_dist)),
-							0xFFFFFFFF, 4 + off.x, 28 + off.y, -0.35, -0.35);
 
 			// level 2: target max health and active augmentations
 			if(getRealLevel() >= 2){
 				int target_maxhp = last_target_obj.getSpawnHealth();
-				UI_Draw.str(hndl.aug_overlay_font_bold, String.Format("Health %d\\%d",
+				UI_Draw.str(hndl.aug_overlay_font_bold, String.Format("Health %d | %d",
 								target_hp, target_maxhp),
-								0xFFFFFFFF, 4 + off.x, 34 + off.y, -0.35, -0.35);
+								0xFFFFFFFF, 8 + off.x, 13 + off.y, -0.27, -0.27, UI_Draw_CenterText);
 				if(getRealLevel() == 2)
 				{
 					DD_AugsHolder aughld = DD_AugsHolder(last_target_obj.findInventory("DD_AugsHolder"));
@@ -158,77 +159,58 @@ class DD_Aug_Targeting : DD_Augmentation
 						string active_aug_list;
 						for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
 							if(aughld.augs[i] && aughld.augs[i].enabled)
-								active_aug_list = active_aug_list .. ": " .. aughld.augs[i].disp_name .. " ";
+								if(active_aug_list == "") active_aug_list = active_aug_list .. getAugDisplayName(aughld.augs[i]);
+								else active_aug_list = active_aug_list .. " | " .. getAugDisplayName(aughld.augs[i]);
 						if(active_aug_list.length() > 0)
-							UI_Draw.str(hndl.aug_overlay_font_bold, "Active augmentations" .. active_aug_list,
-										0xFFFFFFFF, 4 + off.x, 42 + off.y, -0.35, -0.35);
+							UI_Draw.str(hndl.aug_overlay_font_bold, "Active: " .. active_aug_list,
+										0xFFFFFFFF, 8 + off.x, 18 + off.y, -0.27, -0.27, UI_Draw_CenterText);
 					}
 				}
 			}
-			// level 1: target range and health
+			// level 1: target health
 			else if(getRealLevel() >= 1){
 				UI_Draw.str(hndl.aug_overlay_font_bold, String.Format("Health %d",
 								target_hp),
-								0xFFFFFFFF, 4 + off.x, 34 + off.y, -0.35, -0.35);
+								0xFFFFFFFF, 8 + off.x, 13 + off.y, -0.27, -0.27);
 			}
 
-			// level 3: target state and it's target, also all augmentations
+			// level 3: target and all augmentations, bioelectric energy level
 			if(getRealLevel() >= 3){
-				UI_Draw.str(hndl.aug_overlay_font_bold, StateUtils.getTranslation(last_target_obj),
-								0xFFFFFFFF, 4 + off.x, 40 + off.y, -0.35, -0.35);
-				if(getRealLevel() == 3)
-				{
-					DD_AugsHolder aughld = DD_AugsHolder(last_target_obj.findInventory("DD_AugsHolder"));
-					if(aughld)
-					{
-						string active_aug_list;
-						for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
-							if(aughld.augs[i])
-								active_aug_list = active_aug_list .. ": " .. aughld.augs[i].disp_name .. " ";
-						if(active_aug_list.length() > 0)
-							UI_Draw.str(hndl.aug_overlay_font_bold, "Augmentations" .. active_aug_list,
-										0xFFFFFFFF, 4 + off.x, 45 + off.y, -0.35, -0.35);
-					}
+				DD_AugsHolder aughld = DD_AugsHolder(last_target_obj.findInventory("DD_AugsHolder"));
+				if(getRealLevel() == 3 && aughld){
+					string aug_list;
+					for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
+						if(aughld.augs[i])
+							if(aug_list == ""){
+								aug_list = "<" .. string.format("%d", last_target_obj.countinv("DD_BioelectricEnergy")) .. "> ";
+								aug_list = aug_list .. (aughld.augs[i].enabled ? "[" : "") .. getAugDisplayName(aughld.augs[i]) .. (aughld.augs[i].enabled ? "]" : "");
+							}
+							else aug_list = aug_list .. " | " .. (aughld.augs[i].enabled ? "[" : "") .. getAugDisplayName(aughld.augs[i]) .. (aughld.augs[i].enabled ? "]" : "");
+					if(aug_list.length() > 0)
+						UI_Draw.str(hndl.aug_overlay_font_bold, "All: " .. aug_list,
+									0xFFFFFFFF, 8 + off.x, 18 + off.y, -0.27, -0.27, UI_Draw_CenterText);
 				}
 			}
 
-			// level 4: target image and augmentations, including levels
+			// level 4: all augmentations with levels
 			if(getRealLevel() >= 4){
-				TextureID sprtex; bool flip;
-				[sprtex, flip] = TextureUtils.getActorRenderSpriteTex(last_target_obj, owner);
-				UI_Draw.texture(targ_frame,
-							4 + off.x, 55 + off.y,
-							UI_Draw.texWidth(sprtex, 0, 30) + 2,
-							UI_Draw.texHeight(sprtex, 0, 30) + 2,
-							flip ? UI_Draw_FlipX : 0);
-				UI_Draw.texture(sprtex,
-							5 + off.x, 56 + off.y, 0, 30);
 				DD_AugsHolder aughld = DD_AugsHolder(last_target_obj.findInventory("DD_AugsHolder"));
-				if(aughld)
-				{
-					string active_aug_list;
+				if(aughld){
+					string aug_list;
 					for(uint i = 0; i < DD_AugsHolder.augs_slots; ++i)
 						if(aughld.augs[i])
-							active_aug_list = active_aug_list .. ": " .. aughld.augs[i].disp_name .. " [" .. string.format("%d", aughld.augs[i]._level) .. "] ";
-					if(active_aug_list.length() > 0)
-						UI_Draw.str(hndl.aug_overlay_font_bold, "Augmentations" .. active_aug_list,
-									0xFFFFFFFF, 4 + off.x, 45 + off.y, -0.35, -0.35);
+							if(aug_list == ""){
+								aug_list = "<" .. string.format("%d", last_target_obj.countinv("DD_BioelectricEnergy")) .. "> ";
+								aug_list = aug_list .. (aughld.augs[i].enabled ? "[" : "") .. getAugDisplayName(aughld.augs[i]) .. (aughld.augs[i].enabled ? "]" : "") .. " (" .. string.format("%d", aughld.augs[i].getRealLevel()) .. ")";
+							}
+							else aug_list = aug_list .. " | " .. (aughld.augs[i].enabled ? "[" : "") .. getAugDisplayName(aughld.augs[i]) .. (aughld.augs[i].enabled ? "]" : "") .. " (" .. string.format("%d", aughld.augs[i].getRealLevel()) .. ")";
+					if(aug_list.length() > 0)
+						UI_Draw.str(hndl.aug_overlay_font_bold, "All: " .. aug_list,
+									0xFFFFFFFF, 8 + off.x, 18 + off.y, -0.27, -0.27, UI_Draw_CenterText);
 				}
 			}
 		}
 	}
-
-	const target_damage_mult = 1.8;
-	override void ownerDamageDealt(int damage, Name damageType, out int newDamage,
-					Actor inflictor, Actor source, int flags)
-	{
-		if(!enabled || !isLegendary())
-			return;
-
-		if(source == last_target_obj)
-			newDamage = damage * target_damage_mult;
-	}
-
 }
 
 class DD_Targeting_Tracer : LineTracer
