@@ -58,7 +58,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 		_level = 1;
 		disp_desc = disp_desc .. string.format("TECH ONE: Deceleration rate is %.2g%%.\n", getDecelerateFactor() * 100) .. "Agent can perform a dash, even in the air.\n\n";
 		_level = 2;
-		disp_desc = disp_desc .. string.format("TECH TWO: Deceleration rate is %.2g%%.\n", getDecelerateFactor() * 100) .. "Agent can climb flat walls.\n\n";
+		disp_desc = disp_desc .. string.format("TECH TWO: Deceleration rate is %.2g%%.\n", getDecelerateFactor() * 100) .. "Agent can climb flat walls (+use near a wall).\n\n";
 		_level = 3;
 		disp_desc = disp_desc .. string.format("TECH THREE: Deceleration rate is %.3g%%.\n", getDecelerateFactor() * 100) .. "Agent takes less damage while dashing.\n\n";
 		_level = 4;
