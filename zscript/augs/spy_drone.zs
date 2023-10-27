@@ -138,7 +138,7 @@ class DD_Aug_SpyDrone : DD_Augmentation
 		{
 			vector2 off = CVar_Utils.getOffset("dd_spy_drone_cam_off");
 			string s_act = "Remote SpyDrone Active";
-			UI_Draw.str(hndl.aug_ui_font, s_act, 11,
+			UI_Draw.str(hndl.aug_ui_font, s_act, 0xFFFFFFFF,
 					320.0/3/2 + 2
 					- UI_Draw.strWidth(hndl.aug_ui_font, s_act, -0.55, -0.55)/2
 					+ off.x,
@@ -158,7 +158,7 @@ class DD_Aug_SpyDrone : DD_Augmentation
 		vector2 off = CVar_Utils.getOffset("dd_spy_drone_cam_off");
 
 		string s_act = "Remote SpyDrone Active";
-		UI_Draw.str(hndl.aug_ui_font, s_act, 11,
+		UI_Draw.str(hndl.aug_ui_font, s_act, 0xFFFFFFFF,
 				320.0/3/2 + 2
 				- UI_Draw.strWidth(hndl.aug_ui_font, s_act, -0.55, -0.55)/2
 				+ off.x,
