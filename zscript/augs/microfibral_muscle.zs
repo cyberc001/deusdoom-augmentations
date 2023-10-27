@@ -24,25 +24,22 @@ class DD_Aug_MicrofibralMuscle : DD_Augmentation
 		id = 19;
 		disp_name = "Microfibral Muscle";
 		disp_desc = "Muscle strength is amplified with ionic polymeric gel\n"
-			    "myofibrils that allow the agent to lift and throw\n"
-			    "extraordinarily heavy objects, which can stun\n"
-			    "and hurt monsters on impact.\n"
-			    "It also allows the agent to strangle and pick up alive\n"
-			    "monsters, with each tech level increasing the tier of\n"
-			    "monsters possible to pick up.\n\n"
-			    "TECH ONE: Strength is increased slightly, agent can\n"
-			    "pick up some objects.\n\n"
-			    "TECH TWO: Strength is increased moderately, agent\n"
-			    "can pick up heavier objects like barrels and corpses.\n\n"
-			    "TECH THREE: Strength is increased significantly.\n\n"
-			    "TECH FOUR: Agent is inhumanly strong.\n\n"
-			    "Energy Rate: 20 Units/Minute\n\n";
+			    "myofibrils that allow the agent to:\n"
+			    "- lift heavy objects (+use) and inflict damage by\n"
+			    "throwing them (+attack).\n"
+			    "- subdue foes (hold +use) and strangle them to death\n"
+			    "(+attack) or throw them (+altattack).\n\n";
 
-		disp_legend_desc = "LEGENDARY UPGRADE: Agent is so strong that they\n"
-				   "can pry open many door-like structures with their\n"
-				   "bare hands. Also, objects are now thrown much move\n"
-				   "violently, causing much more damage on impact, and\n"
-				   "much more dangerous monsters can be picked up.";
+		_level = 1;
+		disp_desc = disp_desc .. string.format("TECH ONE: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 200 * (getRealLevel() - 1));
+		_level = 2;
+		disp_desc = disp_desc .. string.format("TECH TWO: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 200 * (getRealLevel() - 1));
+		_level = 3;
+		disp_desc = disp_desc .. string.format("TECH THREE: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 200 * (getRealLevel() - 1));
+		_level = 4;
+		disp_desc = disp_desc .. string.format("TECH FOUR: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 200 * (getRealLevel() - 1));
+		_level = 1;
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
 		slots_cnt = 1;
 		slots[0] = Arms;
