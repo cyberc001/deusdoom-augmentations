@@ -255,15 +255,17 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 				if(aughld.augs[i] && aughld.augs[i] is "DD_Aug_SpyDrone")
 				{
 					spyaug = DD_Aug_SpyDrone(aughld.augs[i]);
-					if(spyaug.drone_actor && spyaug.drone_actor.health > 0)
+
+					if(spyaug.drone && spyaug.drone.health > 0)
 					{
 						switch(e.args[0])
 						{
-							case 0: spyaug.drone_actor.queueAccelerationX(double(e.args[1]) / 10000); break;
-							case 1: spyaug.drone_actor.queueAccelerationY(double(e.args[1]) / 10000); break;
-							case 2: spyaug.drone_actor.queueAccelerationZ(double(e.args[1]) / 10000); break;
-							case 3: spyaug.drone_actor.queueTurnAngle((double)(e.args[1]) / 10000); break;
-							case 4: spyaug.drone_actor.queueUse();
+							case 0: spyaug.drone.acc_queue.x = e.args[1] / 10000.; break;
+							case 1: spyaug.drone.acc_queue.y = e.args[1] / 10000.; break;
+							case 2: spyaug.drone.acc_queue.z = e.args[1] / 10000.; break;
+							case 3: spyaug.drone.A_SetAngle(spyaug.drone.angle + e.args[1] / 10000.); break;
+							case 4: spyaug.drone.use = true; break;
+							case 5: case 6: spyaug.drone.explode(e.args[0] == 6); break;
 						}
 					}
 				}

@@ -16,8 +16,7 @@ ui/menu/activate			MENUACTV
 ui/menu/focus				MENUFOCS
 ui/menu/press				MENUPRES
 
-
 play/aug/loop				AUGLOOP
 
-play/aug/fatalsave1			AUGSAVE1
-play/aug/fatalsave2			AUGSAVE2
+play/aug/spy_drone/move			SPYMOVE
+play/aug/spy_drone/death		SPYDEATH

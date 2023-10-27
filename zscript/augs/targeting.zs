@@ -33,12 +33,6 @@ class DD_Aug_Targeting : DD_Augmentation
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
-		disp_legend_desc = "LEGENDARY UPGRADE: Augmentation firmly\n"
-				   "integrates with agent's mind, providing\n"
-				   "extensive info on the last target they aimed\n"
-				   "at, boosting overall offence effectiveness\n"
-				   "against such target.";
-
 		slots_cnt = 1;
 		slots[0] = Eyes;
 	}
