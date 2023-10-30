@@ -84,7 +84,7 @@ class DD_Aug_Regeneration : DD_Augmentation
 	}
 
 	int regen_timer;
-	protected int getHealthRegenRate() { return 5 * ((!owner || owner is "PlayerPawn") ? 1 : (3 + getRealLevel() - 1) * 1.2) - (owner ? (owner.health >= 100 && legend_installed == 1 ? 2 : 0) : 0); }
+	protected int getHealthRegenRate() { return 5 * ((!owner || owner is "PlayerPawn" || owner is "DD_AugsHolder") ? 1 : (3 + getRealLevel() - 1) * 1.2) - (owner ? (owner.health >= 100 && legend_installed == 1 ? 2 : 0) : 0); }
 	protected int getHealthRegenInterval()
 	{
 		return 75 - 13 * (getRealLevel() - 1);
