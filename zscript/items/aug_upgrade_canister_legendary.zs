@@ -31,12 +31,17 @@ class DD_AugmentationUpgradeCanisterLegendary : DD_AugmentationUpgradeCanister
 
 		while(queue.toupgrade.size() > 0)
 		{
-			if(aughld.augs[queue.toupgrade[0]]._level >= aughld.augs[queue.toupgrade[0]].max_level
-			&& !aughld.augs[queue.toupgrade[0]].legendary)
-			{
-				owner.TakeInventory("DD_AugmentationUpgradeCanisterLegendary", 1);
-				aughld.augs[queue.toupgrade[0]].legendary = true;
-				aughld.augs[queue.toupgrade[0]].disp_desc = aughld.augs[queue.toupgrade[0]].disp_desc .. aughld.augs[queue.toupgrade[0]].disp_legend_desc;
+			if(aughld.augs[queue.toupgrade[0]]._level >= aughld.augs[queue.toupgrade[0]].max_level && aughld.augs[queue.toupgrade[0]].legend_installed == -1)
+			{	
+				DD_InventoryHolder hld = DD_InventoryHolder(owner.findInventory("DD_InventoryHolder"));
+				if(hld){
+					DD_InventoryWrapper item = hld.findItem("DD_AugmentationUpgradeCanisterLegendary");
+					if(item){
+						--item.amount;
+						if(item.amount <= 0)
+							hld.removeItem(item);
+					}
+				}
 			}
 			queue.toupgrade.Delete(0);
 		}
@@ -44,21 +49,6 @@ class DD_AugmentationUpgradeCanisterLegendary : DD_AugmentationUpgradeCanister
 	}
 
 
-	// ------------------
-	// External functions
-	// ------------------
-
-	// Description:
-	//	Queues trying to consume a legendary upgrade canister from player's inventory
-	//	to upgrade an augmentation.
-	// Arguments:
-	//	plr - player's actor.
-	//	cnst_instance - instance of upgrade canister class for queueing purposes
-	//	aug_slot - augmentation slot to upgrade.
-	// Return value:
-	//	false - no canisters left or augmentation is already legendary upgraded or it is not at max level
-	//		or there is no augmentation in this slot or canister instance is NULL.
-	//	true - successfull queueing;
 	static clearscope bool queueConsume(PlayerPawn plr, DD_AugmentationUpgradeCanisterLegendary cnst_instance, int aug_slot)
 	{
 		DD_AugsHolder aughld = DD_AugsHolder(plr.findInventory("DD_AugsHolder"));
@@ -69,14 +59,18 @@ class DD_AugmentationUpgradeCanisterLegendary : DD_AugmentationUpgradeCanister
 			return false;
 		if(aughld.augs[aug_slot]._level < aughld.augs[aug_slot].max_level)
 			return false;
-		if(aughld.augs[aug_slot].legendary)
+		if(aughld.augs[aug_slot].legend_count <= 0)
 			return false;
-		if(!aughld.augs[aug_slot].can_be_legendary)
+		if(aughld.augs[aug_slot].legend_installed != -1)
 			return false;
 		if(!cnst_instance)
 			return false;
-		if(plr.countInv("DD_AugmentationUpgradeCanisterLegendary") < cnst_instance.queue.toupgrade.size())
-			return false;
+		DD_InventoryHolder hld = DD_InventoryHolder(plr.findInventory("DD_InventoryHolder"));
+		if(hld){
+			DD_InventoryWrapper item = hld.findItem("DD_AugmentationUpgradeCanisterLegendary");
+			if(!item)
+				return false;
+		}
 
 		cnst_instance.queue.toupgrade.push(aug_slot);
 
@@ -96,9 +90,9 @@ class DD_AugmentationUpgradeCanisterLegendary : DD_AugmentationUpgradeCanister
 		}
 
 		return aug_slot > -1
-		    && aughld.augs[aug_slot]
-		    && aughld.augs[aug_slot]._level >= aughld.augs[aug_slot].max_level
-		    && !aughld.augs[aug_slot].legendary
-		    && aughld.augs[aug_slot].can_be_legendary;
+			&& aughld.augs[aug_slot]
+			&& aughld.augs[aug_slot]._level >= aughld.augs[aug_slot].max_level
+			&& aughld.augs[aug_slot].legend_count > 0
+			&& aughld.augs[aug_slot].legend_installed == -1;
 	}
 }

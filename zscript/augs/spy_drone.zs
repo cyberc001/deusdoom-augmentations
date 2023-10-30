@@ -44,6 +44,10 @@ class DD_Aug_SpyDrone : DD_Augmentation
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 		drone.destroy();
 
+		legend_count = 2;
+		legend_names[0] = "pick up items on +use";
+		legend_names[1] = "no reconstruction cooldown";
+
 		slots_cnt = 1;
 		slots[0] = Cranial;
 	}
@@ -58,20 +62,12 @@ class DD_Aug_SpyDrone : DD_Augmentation
 		drone_camtex = TexMan.checkForTexture("DDRONCAM", TexMan.Type_Any);
 	}
 
-	// ------------------
-	// Internal functions
-	// ------------------
-
 	DD_SpyDrone drone;
 	DD_SpyDrone drone_prev;
 	ui TextureID drone_camtex;
 
 	const construction_time = 10 * 35;
 	int construction_timer;
-
-	// -------------
-	// Engine events
-	// -------------
 
 	override void toggle()
 	{
@@ -118,12 +114,13 @@ class DD_Aug_SpyDrone : DD_Augmentation
 	override void tick()
 	{
 		super.tick();
+		hud_info = construction_timer > 0 ? string.format("%.3gs", ceil(construction_timer / 35.)) : "";
 
 		if(construction_timer > 0)
 			--construction_timer;
 		if(!drone && drone_prev){
 			if(enabled) toggle();
-			construction_timer = construction_time;
+			if(legend_installed != 1) construction_timer = construction_time;
 		}
 		drone_prev = drone;
 
@@ -249,7 +246,7 @@ class DD_SpyDrone_Tracer : LineTracer
 				return TRACE_Skip;
 			return TRACE_Stop;
 		}
-		if(results.hitActor && results.hitActor is "Inventory")
+		if(results.hitActor && results.hitActor is "Inventory" && !(results.hitActor is "DD_InventoryPickupWrapper"))
 			return TRACE_Stop;
 		return TRACE_Skip;
 	}
@@ -262,6 +259,8 @@ class DD_SpyDrone : Actor
 	bool use;
 	vector3 acc_queue;
 	int death_lifetime;
+
+	Inventory attached_inv;
 
 	default
 	{
@@ -285,7 +284,14 @@ class DD_SpyDrone : Actor
 		Tag "Spy drone";
 	}
 
-	clearscope double getVel() { return 2.5 + 2 * (parent_aug.getRealLevel() - 1); }
+	override void tick()
+	{
+		super.tick();
+		if(attached_inv)
+			attached_inv.warp(self, flags: WARPF_NOCHECKPOSITION | WARPF_INTERPOLATE);
+	}
+
+	clearscope double getVel() { return 2.5 + 1 * (parent_aug.getRealLevel() - 1); }
 	clearscope double getEMPRadius() { return 120 + 25 * (parent_aug.getRealLevel() - 1); }
 	clearscope double getEMPFactor() { return 0.4 + 0.2 * (parent_aug.getRealLevel() - 1); }
 	clearscope double getExplosionRadius() { return 110 + 20 * (parent_aug.getRealLevel() - 1); }
@@ -334,8 +340,11 @@ class DD_SpyDrone : Actor
 					let usetracer = new("DD_SpyDrone_Tracer");
 					vector3 dir = (AngleToVector(angle, cos(pitch)), -sin(pitch));
 					usetracer.trace(pos, curSector, dir, 64, 0);
-
-					if(usetracer.results.hitLine
+					if(parent_aug.legend_installed == 0 && usetracer.results.hitActor && usetracer.results.hitActor is "Inventory" && usetracer.results.hitActor != attached_inv){
+						attached_inv = Inventory(usetracer.results.hitActor);
+						console.printf("picked up %s", attached_inv.getTag());
+					}
+					else if(usetracer.results.hitLine
 					&& usetracer.results.hitLine.special != 243
 					&& usetracer.results.hitLine.special != 244)
 					// Preventing drone from activating exit lines

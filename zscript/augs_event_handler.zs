@@ -142,9 +142,9 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 					if(item.amount <= 0)
 						hld.removeItem(item);
 				}
-				else if(DD_AugmentationUpgradeCanisterLegendary.canConsume(plr.mo, e.args[0])){
+				else if(DD_AugmentationUpgradeCanisterLegendary.canConsume(plr.mo, e.args[0]) && e.args[1] != -1 && e.args[1] < aughld.augs[e.args[0]].legend_count){
 					item = hld.findItem("DD_AugmentationUpgradeCanisterLegendary");
-					aughld.augs[e.args[0]].legendary = true;
+					aughld.augs[e.args[0]].legend_installed = e.args[1];
 					--item.amount;
 					if(item.amount <= 0)
 						hld.removeItem(item);
@@ -185,7 +185,7 @@ class DD_AugsEventHandler : DD_EventHandlerBase
 						case 1: agaug.queue.dashvel[1].x = -agaug.getDashVel(); break;
 						case 2: agaug.queue.dashvel[2].y = agaug.getDashVel(); break;
 						case 3: agaug.queue.dashvel[3].y = -agaug.getDashVel(); break;
-						case 4: agaug.queue.dashvel[4].z = agaug.getDashVel() * 0.25; break;
+						case 4: agaug.queue.dashvel[4].z = agaug.getDashVel() * 0.4; break;
 					}
 					break;
 				}

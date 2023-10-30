@@ -1,3 +1,8 @@
+class DD_RadarChangedMonster : Inventory
+{
+	bool was_friendly;
+}
+
 class DD_Aug_RadarTransparency : DD_Augmentation
 {
 	ui TextureID tex_off;
@@ -7,7 +12,6 @@ class DD_Aug_RadarTransparency : DD_Augmentation
 	{
 		return state ? tex_on : tex_off;
 	}
-
 
 	override int get_base_drain_rate()
 	{
@@ -36,16 +40,13 @@ class DD_Aug_RadarTransparency : DD_Augmentation
 		disp_desc = disp_desc .. string.format("TECH FOUR: Invisibility restores after %.2gs.\nEnergy rate %d Units/Minute.\n\n", getBlinkTime() / 35., get_base_drain_rate());
 		_level = 1;
 
-		disp_legend_desc = "LEGENDARY UPGRADE: Augmentation can interfere\n"
-				   "with heat and visual signatures using EMP, creating\n"
-				   "an illusion of agent present somewhere else, causing\n"
-				   "enemies to turn against each other.";
+		legend_count = 2;
+		legend_names[0] = "turn cybernetic enemies to your side when invisible";
+		legend_names[1] = "attacking when invisible stuns the victim";
 
 		slots_cnt = 2;
 		slots[0] = Subdermal1;
 		slots[1] = Subdermal2;
-
-		can_be_legendary = true;
 	}
 
 	override void UIInit()
@@ -57,98 +58,68 @@ class DD_Aug_RadarTransparency : DD_Augmentation
 
 	int getBlinkTime()
 	{
-		if(getRealLevel() <= max_level)
-			return 28 - 6 * (getRealLevel() - 1);
-		else
-			return 28 - 6 * (max_level - 1) - 4 * (getRealLevel() - max_level);
+		return 28 - 6 * (getRealLevel() - 1);
 	}
-	int blinktimer; // timer that start when player starts an attack,
-			// revealing him for a short time.
-
-	const trick_range = 512;
-	const trick_cd_min = 35 * 8;
-	const trick_cd_max = 35 * 18;
-	int tricktimer;
+	int blinktimer; // timer that start when player starts an attack, revealing them for a short time
+	int boost_timer; // timer for boosting an attack after cloak, lasts a few ticks
+	int boost_cd_timer;
+	const boost_cd = 35 * 10;
 
 	override void tick()
 	{
 		super.tick();
 
-		if(!enabled){
+		if(!enabled)
 			return;
-		}
+		if(legend_installed == 1)
+			hud_info = (boost_timer || !blinktimer ? "+" : "") .. string.format("%.2gs", boost_cd_timer / 35.);
 
 		if(owner.curstate == PlayerPawn(owner).MissileState
 		|| owner.curstate == PlayerPawn(owner).MeleeState)
 		{
 			owner.A_SetRenderStyle(1.0, Style_Normal);
+			if(blinktimer == 0 && legend_installed == 1)
+				boost_timer = 3;
 			blinktimer = getBlinkTime();
 			return;
 		}
-		if(blinktimer > 0){
+
+		if(boost_timer > 0)
+			--boost_timer;
+		if(boost_cd_timer > 0)
+			--boost_cd_timer;
+		if(blinktimer > 0)
 			--blinktimer;
-			return;
-		}
 
 		Actor mnst;
 		ThinkerIterator it = ThinkerIterator.create("Actor", STAT_DEFAULT);
-		if(DD_ModChecker.getInstance().isLoaded_HDest()
-			&& DD_PatchChecker.getInstance().isLoaded_HDest())
+		while(mnst = Actor(it.next()))
 		{
-			Class<Actor> tgclr_cls = ClassFinder.findActorClass("DD_HDTargetClearer");
-			Actor tgclr = Spawn(tgclr_cls);
-
-			while(mnst = Actor(it.next()))
-			{
-				if(!mnst.bIsMonster || mnst.health <= 0)
-					continue;
-				if(!RecognitionUtils.isFooledByRadarTransparency(mnst))
-					continue;
-
-				tgclr.target = mnst;
-				tgclr.master = owner;
-				tgclr.PostBeginPlay();
-			}
-		}
-		else
-		{
-			while(mnst = Actor(it.next()))
-			{
-				if(!mnst.bIsMonster || mnst.health <= 0)
-					continue;
-				if(!RecognitionUtils.isFooledByRadarTransparency(mnst))
-					continue;
-
-				if(mnst.target && mnst.target == owner){
-					mnst.target = null;
-					mnst.seeSound = "";
-				}
-			}
-		}
-
-		// Creating illusions
-		BlockThingsIterator itb = BlockThingsIterator.Create(owner, trick_range);
-		Actor prevmnst = null;
-		while(itb.next())
-		{
-			Actor mnst = itb.thing;
-
 			if(!mnst.bIsMonster || mnst.health <= 0)
 				continue;
 			if(!RecognitionUtils.isFooledByRadarTransparency(mnst))
 				continue;
-
-			if(isLegendary() && tricktimer == 0 && !random(0, 4)) // random() to just not always pick the same monster
-			{
-				if(prevmnst){
-					mnst.target = prevmnst;
-
-					tricktimer = random(trick_cd_min, trick_cd_max);
+			if(legend_installed == 0){
+				if(blinktimer){
+					DD_RadarChangedMonster token;
+					if(token = DD_RadarChangedMonster(mnst.findInventory("DD_RadarChangedMonster"))){
+						mnst.bFRIENDLY = token.was_friendly;
+						mnst.takeInventory("DD_RadarChangedMonster", 1);
+					}	
 				}
-				prevmnst = mnst;
+				else{
+					if(!mnst.countinv("DD_RadarChangedMonster")){
+						mnst.giveInventory("DD_RadarChangedMonster", 1);
+						DD_RadarChangedMonster(mnst.findInventory("DD_RadarChangedMonster")).was_friendly = mnst.bFRIENDLY;
+						mnst.bFRIENDLY = true;
+					}
+				}
+			}
+			if(mnst.target && mnst.target == owner){
+				mnst.target = null;
+				mnst.seeSound = "";
 			}
 		}
-
 	}
 
 	override void toggle()
@@ -166,18 +137,34 @@ class DD_Aug_RadarTransparency : DD_Augmentation
 			{
 				if(!mnst.bIsMonster)
 					continue;
-
 				if(mnst.seeSound == "")
 					mnst.seeSound = getDefaultByType(mnst.getClass()).seeSound;
 
-				if(DD_ModChecker.getInstance().isLoaded_HDest()
-					&& DD_PatchChecker.getInstance().isLoaded_HDest())
-				{
-					Class<Actor> tgrst_cls = ClassFinder.findActorClass("DD_HDTargetRestorer");
-					Actor tgrst = Spawn(tgrst_cls);
-					tgrst.target = mnst;
+				if(legend_installed == 0){
+					DD_RadarChangedMonster token;
+					if(token = DD_RadarChangedMonster(mnst.findInventory("DD_RadarChangedMonster"))){
+						mnst.bFRIENDLY = token.was_friendly;
+						mnst.takeInventory("DD_RadarChangedMonster", 1);
+					}
 				}
 			}
+		}
+	}
+
+	override void ownerDamageDealt(int damage, Name damageType, out int newDamage,
+					Actor inflictor, Actor victim, int flags)
+	{
+		if(!enabled)
+			return;
+		if(legend_installed == 1 && boost_timer && RecognitionUtils.isFooledByRadarTransparency(victim) && !victim.bBOSS && boost_cd_timer <= 0){
+			let existing_pu = victim.FindInventory("DDPowerup_GasStun");
+			if(existing_pu){
+				existing_pu.DetachFromOwner();
+				existing_pu.Destroy();
+			}
+			let pu = Inventory(Actor.Spawn("DDPowerup_GasStun"));
+			victim.addInventory(pu);
+			boost_cd_timer = boost_cd;
 		}
 	}
 

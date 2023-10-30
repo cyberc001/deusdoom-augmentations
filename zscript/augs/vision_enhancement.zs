@@ -1,8 +1,7 @@
-class DD_Aug_VisionEnhancement : DD_Augmentation
+CLASS DD_Aug_VisionEnhancement : DD_Augmentation
 {
-	TextureID tex_off;
-	TextureID tex_on;
-
+	ui TextureID tex_off;
+	ui TextureID tex_on;
 
 	DD_VisionEnhancement_LightDummy dlight;
 
@@ -11,7 +10,6 @@ class DD_Aug_VisionEnhancement : DD_Augmentation
 	DDLe_SWScreen proj_sw;
 	DDLe_GLScreen proj_gl;
 	ui DDLe_Viewport vwport;
-	
 
 	override TextureID get_ui_texture(bool state)
 	{
@@ -41,6 +39,12 @@ class DD_Aug_VisionEnhancement : DD_Augmentation
 			proj_scr = proj_gl;
 	}
 
+	override void UIInit()
+	{
+		tex_off = TexMan.CheckForTexture("VISENCH0");
+		tex_on = TexMan.CheckForTexture("VISENCH1");
+	}
+
 	override void install()
 	{
 		super.install();
@@ -57,33 +61,19 @@ class DD_Aug_VisionEnhancement : DD_Augmentation
 			    "illuminating area around them.\n\n"
 			    "TECH TWO: Night vision.\n\n"
 			    "TECH THREE: Close range sonar imaging.\n\n"
-			    "TECH FOUR: Long range sonar imaging.\n\n"
-			    "Energy Rate: 60 Units/Minute\n\n";
+			    "TECH FOUR: Long range sonar imaging.\n\n";
 
-		disp_legend_desc = "LEGENDARY UPGRADE: Augmentation aquires\n"
-				   "capability to scan sonar imaging signatures\n"
-				   "to get a complete picture of objects through\n"
-				   "walls using an enormous database of agent's\n"
-				   "vision recordings. It also improves upon\n"
-				   "chemical structure of metarhodopsin XII,\n"
-				   "getting rid of night vision green tint.";
+		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
-
-		tex_off = TexMan.CheckForTexture("VISENCH0");
-		tex_on = TexMan.CheckForTexture("VISENCH1");
+		legend_count = 2;
+		legend_names[0] = "remove night vision tint";
+		legend_names[1] = "display objects in full color";
 
 		slots_cnt = 1;
 		slots[0] = Eyes;
 
 		initProjection();
-
-		can_be_legendary = true;
 	}
-
-
-	// ------------------
-	// Internal functions
-	// ------------------
 
 	protected clearscope double getSonarRange() { return 400.0 + (getRealLevel() - 3.0) * 256.0; }
 
@@ -97,10 +87,6 @@ class DD_Aug_VisionEnhancement : DD_Augmentation
 			return false;
 		return true;
 	}
-
-	// -------------
-	// Engine events
-	// -------------
 
 	override void toggle()
 	{
@@ -131,7 +117,7 @@ class DD_Aug_VisionEnhancement : DD_Augmentation
 
 		if(enabled){
 			if(getRealLevel() >= 2){
-				if(!isLegendary())
+				if(legend_installed != 0)
 					Shader.setEnabled(pl, "DD_NightVision", true);
 				owner.giveInventory("DD_VisionEnhancement_Amp", 1);
 			}
@@ -177,62 +163,91 @@ class DD_Aug_VisionEnhancement : DD_Augmentation
 
 				// First we check if actor is in LOS and shouldn't be rendered
 				let sight_tr = new("DD_VisionEnhancement_SightTracer");
-					sight_tr.ignore = owner;
-					sight_tr.seek = obj;
+				sight_tr.ignore = owner;
+				sight_tr.seek = obj;
 				vector3 trace_dir = obj.pos
 						  - (owner.pos + (0, 0, PlayerPawn(owner).viewHeight));
-				if(trace_dir.length() == 0)
-					continue;
-				trace_dir /= trace_dir.length();
+				if(trace_dir.length() > 0) trace_dir /= trace_dir.length();
 				sight_tr.trace(owner.pos + (0, 0, PlayerPawn(owner).viewHeight), owner.curSector, trace_dir, 999999.0, 0);
-				if(sight_tr.results.hitActor == obj && obj.Alpha > 0)
-					continue;
-			
 
-				vector3 obj_pos = obj.pos;
-				proj_scr.projectWorldPos(obj_pos);
+				if(!obj.bISMONSTER || obj.Alpha >= 1){
+					if(sight_tr.results.hitActor == obj){
+						sight_tr = new("DD_VisionEnhancement_SightTracer");
+						sight_tr.ignore = owner;
+						sight_tr.seek = obj;
+						vector3 trace_dir = obj.pos + (0, 0, obj.height)
+								  - (owner.pos + (0, 0, PlayerPawn(owner).viewHeight));
+						if(trace_dir.length() > 0) trace_dir /= trace_dir.length();
+						sight_tr.trace(owner.pos + (0, 0, PlayerPawn(owner).viewHeight), owner.curSector, trace_dir, 999999.0, 0);
+						if(sight_tr.results.hitActor == obj)
+							continue;
+					}
+				}
+
+				int not_inside_x = 0, not_inside_y = 0;
+
+				proj_scr.projectWorldPos(obj.pos);
 				vector2 proj_norm = proj_scr.projectToNormal();
-				vector2 sonar_pos = vwport.sceneToWindow(proj_norm);
-	
 				if(!vwport.isInside(proj_norm) || !proj_scr.isInScreen())
+					++not_inside_y;
+				vector2 sonar_pos_bot = vwport.sceneToWindow(proj_norm);
+				proj_scr.projectWorldPos(obj.pos + (0, 0, obj.height));
+				proj_norm = proj_scr.projectToNormal();
+				if(!vwport.isInside(proj_norm) || !proj_scr.isInScreen())
+					++not_inside_y;
+
+				vector2 sonar_pos_top = vwport.sceneToWindow(proj_norm);
+
+				vector3 dir = (Actor.AngleToVector(owner.angle, cos(owner.pitch)), -sin(owner.pitch));
+				dir.z = 0;
+
+				proj_scr.projectWorldPos(obj.pos + (RotateVector((dir.x, dir.y), 90), dir.z) * obj.radius);
+				proj_norm = proj_scr.projectToNormal();
+				if(!vwport.isInside(proj_norm) || !proj_scr.isInScreen())
+					++not_inside_x;
+				vector2 sonar_pos_left = vwport.sceneToWindow(proj_norm);
+				proj_scr.projectWorldPos(obj.pos + (RotateVector((dir.x, dir.y), -90), dir.z) * obj.radius);
+				proj_norm = proj_scr.projectToNormal();
+				if(!vwport.isInside(proj_norm) || !proj_scr.isInScreen())
+					++not_inside_x;
+				vector2 sonar_pos_right = vwport.sceneToWindow(proj_norm);
+
+				if(not_inside_x == 2 || not_inside_y == 2)
 					continue;
-	
-				sonar_pos.x *= double(320) / screen.getWidth();
-				sonar_pos.y *= double(200) / screen.getHeight();
+				
+				sonar_pos_top.x *= double(320) / screen.getWidth();
+				sonar_pos_top.y *= double(200) / screen.getHeight();
+				sonar_pos_bot.x *= double(320) / screen.getWidth();
+				sonar_pos_bot.y *= double(200) / screen.getHeight();
+				sonar_pos_left.x *= double(320) / screen.getWidth();
+				sonar_pos_left.y *= double(200) / screen.getHeight();
+				sonar_pos_right.x *= double(320) / screen.getWidth();
+				sonar_pos_right.y *= double(200) / screen.getHeight();
 	
 				// Drawing object sprite
-				TextureID spritetex; bool flip;
-				[spritetex, flip] = TextureUtils.getActorRenderSpriteTex(obj, owner);
-	
-				vector3 objvec = obj.pos - owner.pos;
-				double objdist = objvec.length();
-				double texcoff;
-				if(objdist != 0)
-					texcoff = 1 / (objdist / 164.0);
-				else
-					texcoff = 1.0;
-				double tex_scale_w = abs(obj.scale.x) * texcoff;
-				double tex_scale_h = abs(obj.scale.y) * texcoff;
-				double texw = UI_Draw.texWidth(spritetex, -1, -1) * tex_scale_w;
-				double texh = UI_Draw.texHeight(spritetex, -1, -1) * tex_scale_h;
-				if(obj.scale.x < 0)
-					flip = !flip;
+				TextureID spritetex; bool flip; bool wildcarded;
+				[spritetex, flip, wildcarded] = TextureUtils.getActorRenderSpriteTex(obj, owner);
+				double tex_w = 1, tex_h = 1;
+				if(wildcarded && obj is "Inventory"){
+					spritetex = Inventory(obj).AltHUDIcon;
+					tex_w = tex_h = 0.25;
+				}
 
-				if(isLegendary())
+				if(legend_installed == 1)
 					UI_Draw.texture(spritetex,
-						sonar_pos.x - texw/2,
-						sonar_pos.y - texh,
-						texw, texh,
+						sonar_pos_left.x, sonar_pos_top.y,
+						(sonar_pos_right.x - sonar_pos_left.x) * tex_w, (sonar_pos_bot.y - sonar_pos_top.y) * tex_h,
 						(flip ? 0 : UI_Draw_FlipX)
 						| (obj.scale.y < 0 ? UI_Draw_FlipY : 0));
+
 				else
 					UI_Draw.textureStencil(spritetex,
-						sonar_pos.x - texw/2,
-						sonar_pos.y - texh,
-						texw, texh,
+						sonar_pos_left.x, sonar_pos_top.y,
+						(sonar_pos_right.x - sonar_pos_left.x) * tex_w, (sonar_pos_bot.y - sonar_pos_top.y) * tex_h,
 						color(255, 255, 255),
 						(flip ? 0 : UI_Draw_FlipX)
 						| (obj.scale.y < 0 ? UI_Draw_FlipY : 0));
+
 			}
 		}
 	}

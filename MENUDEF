@@ -19,12 +19,6 @@ AddOptionMenu "DD_Controls"
 	StaticText "Targeting augmentation", Purple
 }
 
-AddOptionMenu "DD_Settings_ControlScheme"
-{
-	Option "Use double-tapping of movement keys for dashing", "dd_dash_on_doubletap", "OnOff"
-	Slider "Time between taps when double-tapping (in ticks)", "dd_dash_doubletap_timer", 1, 35, 1, 0, "dd_dash_on_doubletap"
-	StaticText ""
-}
 AddOptionMenu "DD_Settings_Interface"
 {
 	StaticText "You can enable HUD debug mode to see how certain graphical elements", Green

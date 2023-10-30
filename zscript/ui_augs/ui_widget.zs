@@ -6,3 +6,4 @@
 #include "zscript/ui_augs/widget_classes/ui_ddsmbutton_usecell.zs"
 #include "zscript/ui_augs/widget_classes/ui_ddsmbutton_upgrade.zs"
 #include "zscript/ui_augs/widget_classes/ui_ddbioelenergybar.zs"
+#include "zscript/ui_augs/widget_classes/ui_ddlegendarylist.zs"

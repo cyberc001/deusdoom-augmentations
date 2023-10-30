@@ -27,24 +27,18 @@ class DD_Aug_PowerRecirculator : DD_Augmentation
 		_level = 4;
 		disp_desc = disp_desc .. string.format("TECH FOUR: Energy cost reduction is %g%%.\n\n", getPowerSaveFactor() * 100);
 		_level = 1;
-			
-		disp_legend_desc = "LEGENDARY UPGRADE: polianilene circuits\n"
-				   "are improved, gaining ability to capture\n"
-				   "energy released from forming molecular\n"
-				   "bonds when agent is getting healed.\n"
-				   "Augmentation-induced regeneration\n"
-				   "does not generate energy.";
-
+		
 		slots_cnt = 3;
 		slots[0] = Torso1;
 		slots[1] = Torso2;
 		slots[2] = Torso3;
 
-		can_be_all_toggled = false;
-		passive = true;
-		can_be_legendary = true;
+		legend_count = 3;
+		legend_names[0] = "regain 1/3rd of healing as energy";
+		legend_names[1] = "slow energy regeneration";
+		legend_names[2] = "+20% power drain reduction";
 
-		prev_health = -1;
+		passive = true;
 	}
 
 	override void UIInit()
@@ -52,29 +46,23 @@ class DD_Aug_PowerRecirculator : DD_Augmentation
 		ui_tex = TexMan.CheckForTexture("POWREC0");
 	}
 
-	// ------------------
-	// Internal functions
-	// ------------------
-
-	protected double getPowerSaveFactor() { return 0.15 + 0.1 * (getRealLevel() - 1); }
-
 	// legendary upgrade health regen tracking
 	int prev_health;
+	double energy_regen_queue;
+	const energy_regen = 0.005;
 
-	// -------------
-	// Engine events
-	// -------------
+	protected double getPowerSaveFactor() { return 0.15 + 0.1 * (getRealLevel() - 1) + (legend_installed == 2 ? 0.2 : 0); }
 
 	override void tick()
 	{
 		super.tick();
-
-		if(!owner)
-			return;
+		if(!owner) return;
+		DD_AugsHolder aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
+		if(!aughld) return;
 
 		if(prev_health == -1 && owner)
 			prev_health = owner.health;
-		if(isLegendary())
+		if(legend_installed == 0)
 		{
 			int health_diff = owner.health - prev_health;
 			DD_AugsHolder aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
@@ -88,13 +76,18 @@ class DD_Aug_PowerRecirculator : DD_Augmentation
 				}
 			}
 			if(health_diff > 0)
-				owner.giveInventory("DD_BioelectricEnergy", ceil(health_diff / 2.));
-			prev_health = owner.health;
+				owner.giveInventory("DD_BioelectricEnergy", ceil(health_diff / 3.));
 		}
+		else if(legend_installed == 1){
+			energy_regen_queue += energy_regen;
+			if(energy_regen_queue >= 1){
+				owner.giveInventory("DD_BioelectricEnergy", floor(energy_regen_queue));
+				energy_regen_queue -= floor(energy_regen_queue);
+			}
+		}
+			
+		prev_health = owner.health;
 
-		DD_AugsHolder aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
-		if(!aughld)
-			return;
 		aughld.energy_drain_ml = 1.0 - getPowerSaveFactor();
 	}
 }

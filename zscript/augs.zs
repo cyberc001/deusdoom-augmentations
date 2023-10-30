@@ -40,39 +40,30 @@ class DD_Augmentation : Inventory
 {
 	int id; // to identify duplicates
 	String disp_name; // name to display
-	String disp_desc; // description to display,
-			  // lines are separated by '\n'
-	String disp_legend_desc; // legendary description that is appended when the aug is upgraded to legendary state
+	String disp_desc; // description to display, lines are separated by '\n'
+	String hud_info; // misc info displayed on top of aug icon
 
 	uint _level;
-	clearscope uint getRealLevel()
-	{
-		if(!owner)
-			return _level;
-		let aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
-		if(!aughld)
-			return _level;
-
-		uint ret = _level;
-		if(aughld.level_boost >= 1 && ret < max_level)
-			ret++;
-		if(aughld.level_boost == 2 && legendary)
-			ret++;
-		return ret;
-			
-	}
 	uint max_level;
-	bool legendary; // if augmentation is legendary upgraded
-	clearscope bool isLegendary()
+	clearscope double getRealLevel()
 	{
 		if(!owner)
-			return legendary;
+			return _level;
 		let aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
 		if(!aughld)
-			return legendary;
-		return legendary || (aughld.legendary_boost && _level >= max_level);
+			return _level;
+		double lv = _level;
+		for(uint i = 0; i < aughld.level_boost; ++i){
+			if(lv >= max_level && !aughld.postmax_level_boost)
+				break;
+			lv += (lv >= max_level ? 0.5 : 1);
+		}
+		return lv;
 	}
-	bool can_be_legendary;
+
+	int legend_count; // count of legendary upgrades
+	string legend_names[5]; // names of legendary upgrades to display when aug is highlighted
+	int legend_installed; // legendary upgrade installed, -1 if it isn't
 
 	bool enabled;
 	bool passive;			// if false, cannot be toggled
@@ -143,7 +134,6 @@ class DD_Augmentation : Inventory
 	virtual void ownerDamageDealt(int damage, Name damageType, out int newDamage,
 					Actor inflictor, Actor source, int flags){}
 
-
 	// ---------
 	// Functions
 	// ---------
@@ -154,6 +144,7 @@ class DD_Augmentation : Inventory
 		id = -1;
 		_level = 1;
 		max_level = 4;
+		legend_installed = -1;
 
 		slots_cnt = 0;
 

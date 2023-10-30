@@ -1,4 +1,4 @@
-struct DD_Aug_AgilityEnhancement_Queue
+STRUCt DD_Aug_AgilityEnhancement_Queue
 {
 	vector3 dashvel[5];
 	double deacc;
@@ -13,18 +13,27 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 	ui TextureID tex_on;
 
 	DD_Aug_AgilityEnhancement_Queue queue;
-	ui bool mov_keys_held[4];
+	ui bool mov_keys_held[5];
 	// amount of ticks passed since a key was pressed last time,
 	// used to engage dash.
 	// 0 - forward, 1 - backward, 2 - left, 3 - right, 4 - up
-	ui int mov_keys_timer[5];
+	ui array<int> mov_keys_order;
+	ui void movKeysOrderAdd(int key)
+	{
+		movKeysOrderRemove(key);
+		mov_keys_order.push(key);
+	}
+	ui void movKeysOrderRemove(int key)
+	{
+		uint i = mov_keys_order.find(key);
+		if(i != mov_keys_order.size())
+			mov_keys_order.delete(i);
+	}
 
 	int dash_cd;
 	const vwheight_time = 20;
 	const vwheight_time_coff = 0.30;
 
-	bool use_doubletap_scheme; // keeps the value of dd_dash_on_doubletap CVAR between toggles
-	int dash_tap_time; // also keeps a value of dd_dash_doubletap_timer CVAR
 	bool dash_held;
 
 	const wall_climb_range = 32;
@@ -32,8 +41,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 	bool climbing;
 	bool prev_climbing;
 	bool climb_move[4];
-
-	const gap_squeeze_vel_thres = 1;
+	Line last_climb_wall;
 
 	override TextureID get_ui_texture(bool state)
 	{
@@ -60,11 +68,16 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 		_level = 2;
 		disp_desc = disp_desc .. string.format("TECH TWO: Deceleration rate is %.2g%%.\n", getDecelerateFactor() * 100) .. "Agent can climb flat walls (+use near a wall).\n\n";
 		_level = 3;
-		disp_desc = disp_desc .. string.format("TECH THREE: Deceleration rate is %.3g%%.\n", getDecelerateFactor() * 100) .. "Agent takes less damage while dashing.\n\n";
+		disp_desc = disp_desc .. string.format("TECH THREE: Deceleration rate is %.3g%%.\n", getDecelerateFactor() * 100) .. "Agent takes 30% less damage while dashing.\n\n";
 		_level = 4;
 		disp_desc = disp_desc .. string.format("TECH FOUR: Deceleration rate is %.3g%%.\n", getDecelerateFactor() * 100) .. "Agent cannot collide with foes while dashing.\n\n";
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
+
+		legend_count = 3;
+		legend_names[0] = "-90% damage taken while dashing";
+		legend_names[1] = "dash in all held directions";
+		legend_names[2] = "no need to look at a wall to keep climbing";
 
 		slots_cnt = 1;
 		slots[0] = Legs;
@@ -85,18 +98,11 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 		super.toggle();
 		climbing = false;
 		owner.bTHRUACTORS = false;
-		if(owner && owner.player){
-			use_doubletap_scheme = CVar.getCVar("dd_dash_on_doubletap", owner.player).getFloat();
-			dash_tap_time = CVar.getCVar("dd_dash_doubletap_timer", owner.player).getInt();
-		}
 	}
-
-	// ------
-	// Events
-	// ------
 
 	override double getSpeedFactor() { return climbing ? 0 : 1; }
 	protected double getClimbingVelocity() { return 2 + 1 * (getRealLevel() - 2); }
+	array<Actor> noclip_monsters;
 
 	override void tick()
 	{
@@ -108,6 +114,8 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 		if(climbing != prev_climbing){
 			console.printf(climbing ? "Now climbing" : "Stopped climbing");
 			prev_climbing = climbing;
+			if(!climbing)
+				last_climb_wall = null;
 		}
 		if(climbing){
 			owner.A_ChangeVelocity(0, 0, -owner.vel.z);
@@ -122,9 +130,19 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 				aim_tracer.trace(owner.pos + (0, 0, owner.player.viewHeight - height_mod), owner.curSector, dir, wall_climb_keep_range, 0);
 			}
 
+			if(legend_installed == 2 && aim_tracer.hit_line)
+				last_climb_wall = aim_tracer.hit_line;
+			if((!aim_tracer.hit_wall || !aim_tracer.hit_line) && legend_installed == 2){
+				aim_tracer.hit_line = last_climb_wall;
+				aim_tracer.hit_wall = (last_climb_wall == null ? false : true);
+			}
+
 			if(!aim_tracer.hit_wall || !aim_tracer.hit_line)
 				climbing = false;
 			else{
+				if(!aim_tracer.hit_line)
+					aim_tracer.hit_line = last_climb_wall;
+
 				if(climb_move[0]) owner.A_ChangeVelocity(0, 0, getClimbingVelocity());
 				if(climb_move[1]) owner.A_ChangeVelocity(0, 0, -getClimbingVelocity());
 				vector2 side_dir = aim_tracer.hit_line.delta;
@@ -154,12 +172,24 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 			else
 				owner.player.viewHeight += queue.vwheight_delta / (vwheight_time * (1 - vwheight_time_coff));
 
-			if(getRealLevel() > 3)
-				owner.bTHRUACTORS = true;
+			if(getRealLevel() > 3){
+				let it = BlockThingsIterator.create(owner, owner.vel.length() * 32);
+				for(uint i = 0; i < noclip_monsters.size(); ++i)
+					if(noclip_monsters[i].distance2D(owner) >= owner.vel.length() * 32)
+					{ noclip_monsters[i].bTHRUACTORS = false; noclip_monsters.delete(i); --i; }
+				while(it.next()){
+					if(it.thing.bISMONSTER && noclip_monsters.find(it.thing) == noclip_monsters.size()){
+						it.thing.bTHRUACTORS = true;
+						noclip_monsters.push(it.thing);
+					}
+				}
+			}
 
 			if(queue.vwheight_timer == 0){
 				owner.player.viewHeight = queue.vwheight_prev;
-				owner.bTHRUACTORS = false;
+				for(uint i = 0; i < noclip_monsters.size(); ++i)
+					noclip_monsters[i].bTHRUACTORS = false;
+				noclip_monsters.clear();
 			}
 		}
 		if(!enabled)
@@ -187,9 +217,12 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 
 		if(dash_cd > 0)
 			--dash_cd;
-		for(uint i = 0; i < 5; ++i)
-		{
-			if(dash_cd == 0 && queue.dashvel[i].length() > 0){
+
+		if(dash_cd == 0){
+			for(uint i = 0; i < 5; ++i)
+			{
+				if(queue.dashvel[i].length() == 0)
+					continue;
 				owner.A_ChangeVelocity(queue.dashvel[i].x, queue.dashvel[i].y, queue.dashvel[i].z, CVF_RELATIVE);
 				dash_cd = getDashCD();
 				if(queue.dashvel[i].z == 0 && queue.vwheight_timer == 0){
@@ -198,13 +231,15 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 					queue.vwheight_delta = owner.player.viewHeight * 0.8;
 				}
 			}
-			queue.dashvel[i] = (0, 0, 0);
 		}
+		for(uint i = 0; i < 5; ++i)
+			queue.dashvel[i] = (0, 0, 0);
+
 	}
 
 	protected double getProtectionFactor()
 	{
-		return GetRealLevel() > 2 ? 0.3 : 0;
+		return legend_installed == 0 ? 0.9 : 0.3;
 	}
 	override void ownerDamageTaken(int damage, Name damageType, out int newDamage,
 					Actor inflictor, Actor source, int flags)
@@ -220,13 +255,6 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 			aughld.absorbtion_msg_timer = 35 * 1;
 			aughld.doGFXResistance();
 		}
-	}
-
-	override void UITick()
-	{
-		for(uint i = 0; i < 5; ++i)
-			if(use_doubletap_scheme && mov_keys_timer[i] <= dash_tap_time)
-				++mov_keys_timer[i];
 	}
 
 	override bool inputProcess(InputEvent e)
@@ -255,83 +283,65 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 				if(KeyBindUtils.checkBind(e.keyScan, "+moveright")) EventHandler.sendNetworkEvent("dd_climb", 5);
 			}
 
-			/* Deceleration */
-			if(KeyBindUtils.checkBind(e.keyScan, "+forward")) mov_keys_held[0] = true;
-			if(KeyBindUtils.checkBind(e.keyScan, "+back")) mov_keys_held[1] = true;
-			if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")) mov_keys_held[2] = true;
-			if(KeyBindUtils.checkBind(e.keyScan, "+moveright")) mov_keys_held[3] = true;
+			/* Held movement keys */
+			if(KeyBindUtils.checkBind(e.keyScan, "+forward")){
+				mov_keys_held[0] = true;
+				movKeysOrderAdd(0);
+			}
+			if(KeyBindUtils.checkBind(e.keyScan, "+back")){
+				mov_keys_held[1] = true;
+				movKeysOrderAdd(1);
+			}
+			if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")){
+				mov_keys_held[2] = true;
+				movKeysOrderAdd(2);
+			}
+			if(KeyBindUtils.checkBind(e.keyScan, "+moveright")){
+				mov_keys_held[3] = true;
+				movKeysOrderAdd(3);
+			}
+			if(KeyBindUtils.checkBind(e.keyScan, "+jump")){
+				mov_keys_held[4] = true;
+				movKeysOrderAdd(4);
+			}
 
 			if(mov_keys_held[0] || mov_keys_held[1] || mov_keys_held[2] || mov_keys_held[3])
 				EventHandler.sendNetworkEvent("dd_grip", 0);
 
 			/* Dashing */
-			if(use_doubletap_scheme)
-			{
-				if(KeyBindUtils.checkBind(e.keyScan, "+forward"))
-				{
-					if(mov_keys_timer[0] <= dash_tap_time && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 0);
-					mov_keys_timer[0] = 0;
-				}
-				else if(KeyBindUtils.checkBind(e.keyScan, "+back"))
-				{
-					if(mov_keys_timer[1] <= dash_tap_time && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 1);
-					mov_keys_timer[1] = 0;
-				}
-				else if(KeyBindUtils.checkBind(e.keyScan, "+moveleft"))
-				{
-					if(mov_keys_timer[2] <= dash_tap_time && enabled) 
-						EventHandler.sendNetworkEvent("dd_vdash", 2);
-					mov_keys_timer[2] = 0;
-				}
-				else if(KeyBindUtils.checkBind(e.keyScan, "+moveright"))
-				{
-					if(mov_keys_timer[3] <= dash_tap_time && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 3);
-					mov_keys_timer[3] = 0;
-				}
-				else if(KeyBindUtils.checkBind(e.keyScan, "+jump"))
-				{
-					if(mov_keys_timer[4] <= dash_tap_time && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 4);
-					mov_keys_timer[4] = 0;
-				}
-			}
-			else
-			{
-				if(KeyBindUtils.checkBind(e.keyScan, "+forward"))
-					mov_keys_timer[0] = 1;
-				else if(KeyBindUtils.checkBind(e.keyScan, "+back"))
-					mov_keys_timer[1] = 1;
-				else if(KeyBindUtils.checkBind(e.keyScan, "+moveleft"))
-					mov_keys_timer[2] = 1;
-				else if(KeyBindUtils.checkBind(e.keyScan, "+moveright"))
-					mov_keys_timer[3] = 1;
-				else if(KeyBindUtils.checkBind(e.keyScan, "+jump"))
-					mov_keys_timer[4] = 1;
-
-				else if(KeyBindUtils.checkBind(e.keyScan, "dd_dash")){
-					if(mov_keys_timer[0] && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 0);
-					else if(mov_keys_timer[1] && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 1);
-					else if(mov_keys_timer[2] && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 2);
-					else if(mov_keys_timer[3] && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 3);
-					else if(mov_keys_timer[4] && enabled)
-						EventHandler.sendNetworkEvent("dd_vdash", 4);
-				}
+			if(KeyBindUtils.checkBind(e.keyScan, "dd_dash") && enabled
+			&& (mov_keys_held[0] || mov_keys_held[1] || mov_keys_held[2] || mov_keys_held[3] || mov_keys_held[4])){
+				for(int i = mov_keys_order.size() - 1; i >= 0; --i)
+					if(mov_keys_held[mov_keys_order[i]]){
+						EventHandler.sendNetworkEvent("dd_vdash", mov_keys_order[i]);
+						IF(LEgend_installed != 1)
+							break;
+					}
 			}
 		}
 		else if(e.type == InputEvent.Type_KeyUp)
 		{
-			/* Deceleration */
-			if(KeyBindUtils.checkBind(e.keyScan, "+forward")) mov_keys_held[0] = false;
-			if(KeyBindUtils.checkBind(e.keyScan, "+back")) mov_keys_held[1] = false;
-			if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")) mov_keys_held[2] = false;
-			if(KeyBindUtils.checkBind(e.keyScan, "+moveright")) mov_keys_held[3] = false;
+			if(KeyBindUtils.checkBind(e.keyScan, "+forward")){
+				mov_keys_held[0] = false;
+				movKeysOrderRemove(0);
+			}
+			if(KeyBindUtils.checkBind(e.keyScan, "+back")){
+				mov_keys_held[1] = false;
+				movKeysOrderRemove(1);
+			}
+			if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")){
+				mov_keys_held[2] = false;
+				movKeysOrderRemove(2);
+			}
+			if(KeyBindUtils.checkBind(e.keyScan, "+moveright")){
+				mov_keys_held[3] = false;
+				movKeysOrderRemove(3);
+			}
+			if(KeyBindUtils.checkBind(e.keyScan, "+jump")){
+				mov_keys_held[4] = false;
+				movKeysOrderRemove(4);
+			}
+
 			if(!mov_keys_held[0] && !mov_keys_held[1] && !mov_keys_held[2] && !mov_keys_held[3] && enabled)
 					EventHandler.sendNetworkEvent("dd_grip", 1);
 
@@ -340,21 +350,6 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 			if(KeyBindUtils.checkBind(e.keyScan, "+back")) EventHandler.sendNetworkEvent("dd_climb", 7);
 			if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")) EventHandler.sendNetworkEvent("dd_climb", 8);
 			if(KeyBindUtils.checkBind(e.keyScan, "+moveright")) EventHandler.sendNetworkEvent("dd_climb", 9);
-
-			/* Dashing */
-			if(!use_doubletap_scheme)
-			{
-				if(KeyBindUtils.checkBind(e.keyScan, "+forward"))
-					mov_keys_timer[0] = 0;
-				else if(KeyBindUtils.checkBind(e.keyScan, "+back"))
-					mov_keys_timer[1] = 0;
-				else if(KeyBindUtils.checkBind(e.keyScan, "+moveleft"))
-					mov_keys_timer[2] = 0;
-				else if(KeyBindUtils.checkBind(e.keyScan, "+moveright"))
-					mov_keys_timer[3] = 0;
-				else if(KeyBindUtils.checkBind(e.keyScan, "+jump"))
-					mov_keys_timer[4] = 0;
-			}
 		}
 		return false;
 	}

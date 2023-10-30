@@ -30,15 +30,13 @@ CLASS DD_Aug_BallisticProtection : DD_Augmentation
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
-		disp_legend_desc = "LEGENDARY UPGRADE: Some ballistic attacks\n"
-				   "directed at agent are redirected towards the attacker.\n"
-				   "This effect triggers on every 3rd attack.\n";
+		legend_count = 2;
+		legend_names[0] = "Reflect every 2nd bullet";
+		legend_names[1] = "Increase resistance when taking damage";
 
 		slots_cnt = 2;
 		slots[0] = Subdermal1;
 		slots[1] = Subdermal2;
-
-		can_be_legendary = true;
 	}
 
 	override void UIInit()
@@ -53,19 +51,20 @@ CLASS DD_Aug_BallisticProtection : DD_Augmentation
 
 	protected double getProtectionFactor()
 	{
-		double lgnd_off = isLegendary() ? 0.07 : 0;
-		if(getRealLevel() <= max_level)
-			return 0.20 + 0.166 * (getRealLevel() - 1) + lgnd_off;
-		else
-			return 0.20 + 0.166  * (max_level - 1) + 0.1 * (getRealLevel() - max_level) + lgnd_off;
+		return 0.2 + 0.13 * (getRealLevel() - 1) + bonus_res;
 	}
 
-	// ------
-	// Events
-	// ------
+	int reflect_cnt;
+	double bonus_res;
+	const bonus_res_inc = 0.05;
+	const bonus_res_decay = 0.001;
+	const max_bonus_res = 0.3;
 
-	const ricochet_dminst_cd = 2; // cooldown of ricochet in damage instances
-	int ricochet_dminst; // current damage instance
+	override void tick()
+	{
+		super.tick();
+		bonus_res = max(bonus_res - bonus_res_decay, 0);
+	}
 
 	override void ownerDamageTaken(int damage, Name damageType, out int newDamage,
 					Actor inflictor, Actor source, int flags)
@@ -76,37 +75,35 @@ CLASS DD_Aug_BallisticProtection : DD_Augmentation
 		double protfact_ml;
 		if(RecognitionUtils.damageIsBallistic(inflictor, source, damageType, flags, protfact_ml))
 		{
-			if(isLegendary() && ricochet_dminst == ricochet_dminst_cd){
-				ricochet_dminst = 0;
-				newDamage = 0;
+			Name shld_cls = "DSMagicShield";
+			for(Inventory i = owner.Inv; i != null; i = i.Inv)
+				if(i is shld_cls)
+					return;
 
-				if(source || inflictor){
-					vector3 tosrc;
-					if(source)	tosrc = owner.Vec3To(source).unit();
-					else		tosrc = owner.Vec3To(inflictor).unit();
-
-					double angle;
-					if(source)	angle = owner.AngleTo(source);
-					else		angle = owner.AngleTo(inflictor);
-					double pitch = -asin(tosrc.z);
-
-					owner.LineAttack(angle, 4096, pitch, damage * 2, "None", null);
+			if(legend_installed == 0){
+				if(++reflect_cnt == 2){
+					reflect_cnt = 0;
+					if(source || inflictor){
+						vector3 tosrc;
+						if(source)	tosrc = owner.Vec3To(source).unit();
+						else		tosrc = owner.Vec3To(inflictor).unit();
+						double angle;
+						if(source)	angle = owner.AngleTo(source);
+						else		angle = owner.AngleTo(inflictor);
+						double pitch = -asin(tosrc.z);
+						owner.LineAttack(angle, 4096, pitch, damage * 2, damageType, null);
+					}
 				}
+				hud_info = string.format("REFL %d", reflect_cnt);
 			}
-			else {
-				Name shld_cls = "DSMagicShield";
-				for(Inventory i = owner.Inv; i != null; i = i.Inv)
-					if(i is shld_cls)
-						return;
+			else if(legend_installed == 1)
+				bonus_res = min(bonus_res + bonus_res_inc, max_bonus_res);
 
-				if(isLegendary())
-					ricochet_dminst++;
-				newDamage = damage * (1 - getProtectionFactor() * protfact_ml);
-				DD_AugsHolder aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
-				aughld.absorbtion_msg = String.Format("%.0f%% ABSORB", getProtectionFactor()*100*protfact_ml);
-				aughld.absorbtion_msg_timer = 35 * 2;
-				aughld.doGFXResistance();
-			}
+			newDamage = damage * (1 - getProtectionFactor() * protfact_ml);
+			DD_AugsHolder aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
+			aughld.absorbtion_msg = String.Format("%.0f%% ABSORB", getProtectionFactor()*100*protfact_ml);
+			aughld.absorbtion_msg_timer = 35 * 2;
+			aughld.doGFXResistance();
 		}
 	}
 }

@@ -7,8 +7,7 @@
 		if(e.type == UiEvent.Type_LButtonUp && pressed)
 		{
 			PlayerInfo plr = players[consoleplayer];
-			
-			EventHandler.sendNetworkEvent("dd_upgrade_aug", parent_wnd.selected_aug_slot);
+			EventHandler.sendNetworkEvent("dd_upgrade_aug", parent_wnd.selected_aug_slot, parent_wnd.lgnd_list.sel);
 		}
 		super.processUIInput(e);
 	}
@@ -28,14 +27,19 @@
 		}
 		else if(DD_AugmentationUpgradeCanisterLegendary.canConsume(plr.mo,
 				parent_wnd.selected_aug_slot)){
-			disabled = false;
-			text_color = 0xFFFFFFFF;
+			if(parent_wnd.lgnd_list.sel != -1){
+				disabled = false;
+				text_color = 0xFFFFFFFF;
+			}
+			else{
+				disabled = true;
+				text_color = 0x80808080;
+			}
 			text = "Perfect";
 		}
 		else{
 			disabled = true;
 			text_color = 0x80808080;
 		}
-			
 	}
 }

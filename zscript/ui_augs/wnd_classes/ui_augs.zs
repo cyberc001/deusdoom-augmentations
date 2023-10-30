@@ -30,6 +30,8 @@ class UI_Augs : UI_Window
 	UI_DDInstalledAugButton iaugbutn_cranial;
 	UI_DDInstalledAugButton iaugbutn_eyes;
 
+	UI_DDLegendaryList lgnd_list;
+
 	UI_DDInstalledAugLevelDisplay iauglvldisp_arms;
 	UI_DDInstalledAugLevelDisplay iauglvldisp_subdermal1;
 	UI_DDInstalledAugLevelDisplay iauglvldisp_subdermal2;
@@ -56,7 +58,6 @@ class UI_Augs : UI_Window
 		if(!sidepanel){
 			sidepanel = new("UI_Augs_Sidepanel");
 			sidepanel.UIInit();
-			
 		}
 
 		self.x = 10; self.y = 15;
@@ -97,6 +98,9 @@ class UI_Augs : UI_Window
 		iaugbutn_eyes.parent_wnd = self;
 		iaugbutn_eyes.sidepanel = sidepanel;
 		addWidget(iaugbutn_eyes);
+
+		lgnd_list = UI_DDLegendaryList(New("UI_DDLegendaryList"));
+		addWidget(lgnd_list);
 
 		iauglvldisp_arms = UI_DDInstalledAugLevelDisplay(New("UI_DDInstalledAugLevelDisplay"));
 		addWidget(iauglvldisp_arms);
@@ -180,6 +184,7 @@ class UI_Augs : UI_Window
 		iaugbutn_legs.h = 20;
 		iaugbutn_legs.tex_w = -0.4;
 		iaugbutn_legs.tex_h = -0.4;
+		iaugbutn_legs.lgnd_face_left = true;
 
 		iaugbutn_torso1.aug_slot = Torso1;
 		iaugbutn_torso1.x = x + 104.7;
@@ -188,6 +193,7 @@ class UI_Augs : UI_Window
 		iaugbutn_torso1.h = 20;
 		iaugbutn_torso1.tex_w = -0.4;
 		iaugbutn_torso1.tex_h = -0.4;
+		iaugbutn_torso1.lgnd_face_left = true;
 
 		iaugbutn_torso2.aug_slot = Torso2;
 		iaugbutn_torso2.x = x + 104.7;
@@ -196,6 +202,7 @@ class UI_Augs : UI_Window
 		iaugbutn_torso2.h = 20;
 		iaugbutn_torso2.tex_w = -0.4;
 		iaugbutn_torso2.tex_h = -0.4;
+		iaugbutn_torso2.lgnd_face_left = true;
 
 		iaugbutn_torso3.aug_slot = Torso3;
 		iaugbutn_torso3.x = x + 104.7;
@@ -204,6 +211,7 @@ class UI_Augs : UI_Window
 		iaugbutn_torso3.h = 20;
 		iaugbutn_torso3.tex_w = -0.4;
 		iaugbutn_torso3.tex_h = -0.4;
+		iaugbutn_torso3.lgnd_face_left = true;
 
 		iaugbutn_cranial.aug_slot = Cranial;
 		iaugbutn_cranial.x = x + 24.5;
@@ -220,7 +228,11 @@ class UI_Augs : UI_Window
 		iaugbutn_eyes.h = 20;
 		iaugbutn_eyes.tex_w = -0.4;
 		iaugbutn_eyes.tex_h = -0.4;
+		iaugbutn_eyes.lgnd_face_left = true;
 
+		lgnd_list.parent_wnd = self;
+		lgnd_list.text_font = aug_font;
+		lgnd_list.sel_text_font = aug_font_bold;
 
 		iauglvldisp_arms.aug_slot = Arms;
 		iauglvldisp_arms.x = x + 20.2;
@@ -296,7 +308,7 @@ class UI_Augs : UI_Window
 	override void open()
 	{
 		let ddevh = DD_EventHandler(StaticEventHandler.Find("DD_EventHandler"));
-		ddevh.wndmgr.addWindow(ddevh, sidepanel);
+		ddevh.wndmgr.addWindow(ddevh, sidepanel, true);
 	}
 	override void close()
 	{

@@ -15,7 +15,6 @@ class UI_DDCanisterAugButton : UI_Widget
 	ui double tex_w;
 	ui double tex_h;
 
-
 	override void UIInit()
 	{
 		bg = TexMan.CheckForTexture("AUGUI17");

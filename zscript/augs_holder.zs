@@ -101,10 +101,9 @@ class DD_AugsHolder : Inventory
 		dmg_dir_texs[4] = TexMan.checkForTexture("AUGUI30");
 	}
 
-	// Lil' hacks for Power Recirculator and Synthetic Heart
-	double energy_drain_ml;
-	int level_boost; // 0 - no boost, 1 - boost up to level 4, 2 - boost to level 5 if legendary
-	bool legendary_boost;
+	double energy_drain_ml; // from power recirculator
+	int level_boost; // from synthetic heart
+	bool postmax_level_boost;
 
 	// Monster-specific workarounds
 	int orig_speed; // original speed to muliply by getSpeedFactor()
@@ -593,7 +592,10 @@ class DD_AugsHolder : Inventory
 			int kb1, kb2;
 			[kb1, kb2] = Bindings.getKeysForCommand(String.format("dd_togg_aug_%d", i));
 			String bindstr = String.format("%s%s%s", KeyBindUtils.keyScanToName(kb1), KeyBindUtils.keyScanToName(kb2) == "" ? "" : "; ", KeyBindUtils.keyScanToName(kb2));
-			UI_Draw.str(hndl.aug_overlay_font_bold, bindstr, Font.CR_LIGHTBLUE, draw_x + 2.2, draw_y + aug_sz_y - 5,
+			UI_Draw.str(hndl.aug_overlay_font_bold, augs[i].hud_info, 0x0000000040, draw_x + 2.22, draw_y + 2,
+					-0.2 * aug_frame_scale, -0.25 * aug_frame_scale);
+
+			UI_Draw.str(hndl.aug_overlay_font_bold, bindstr, 0x0000000040, draw_x + 2.2, draw_y + aug_sz_y - 5,
 					-0.2 * aug_frame_scale, -0.25 * aug_frame_scale);
 			
 			draw_y += aug_sz_y + draw_dy;

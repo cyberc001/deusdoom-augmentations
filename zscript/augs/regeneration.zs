@@ -1,3 +1,22 @@
+class DD_RegenConsumption : Inventory
+{
+	double hp_left;
+}
+class DD_200Health : Health
+{
+	default
+	{
+		Inventory.MaxAmount 200;
+	}
+}
+class DD_120Armor : ArmorBonus
+{
+	default
+	{
+		Armor.MaxSaveAmount 120;
+	}
+}
+
 class DD_Aug_Regeneration : DD_Augmentation
 {
 	ui TextureID tex_off;
@@ -8,9 +27,7 @@ class DD_Aug_Regeneration : DD_Augmentation
 		return state ? tex_on : tex_off;
 	}
 
-	override int get_base_drain_rate(){
-		return 150;
-	}
+	override int get_base_drain_rate() { return 100; }
 
 	override void install()
 	{
@@ -45,19 +62,17 @@ class DD_Aug_Regeneration : DD_Augmentation
 
 			_level = 1;
 			disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
-				}
-
-		disp_legend_desc = "LEGENDARY UPGRADE: Prevents an instance of\n"
-				   "fatal damage directed at agent, granting a short\n"
-				   "burst of almost instant regeneration.\n"
-				   "This ability has a long cooldown.\n\n";
+		}
 
 		slots_cnt = 3;
 		slots[0] = Torso1;
 		slots[1] = Torso2;
 		slots[2] = Torso3;
 
-		can_be_legendary = true;
+		legend_count = 3;
+		legend_names[0] = "Consume corpses to regain more health";
+		legend_names[1] = "Regenerate up to 200 hp, less effective >=100 hp";
+		legend_names[2] = "Regenerate current armor up to 120";
 
 		regen_timer = getHealthRegenInterval();
 	}
@@ -68,47 +83,19 @@ class DD_Aug_Regeneration : DD_Augmentation
 		tex_on = TexMan.CheckForTexture("REGEN1");
 	}
 
-	// ------------------
-	// Internal functions
-	// ------------------
-
-	const fatal_regen_burst = 45; // burst of HP regeneration when recieving fatal damage
-	const fatal_regen_time = 35 * 210; // time it takes to replenish the fatal damage negating ability
-	int fatal_regen_timer;
-	const fatal_tint_time = 35 * 15;
-	int fatal_tint_timer;
-
 	int regen_timer;
-	protected int getHealthRegenRate() { return 2 + 1 * (getRealLevel() - 1) + ((owner is "PlayerPawn") ? 0 : (getRealLevel() - 1) * 1.5); }
+	protected int getHealthRegenRate() { return 5 * ((!owner || owner is "PlayerPawn") ? 1 : (3 + getRealLevel() - 1) * 1.2) - (owner ? (owner.health >= 100 && legend_installed == 1 ? 2 : 0) : 0); }
 	protected int getHealthRegenInterval()
 	{
-		if(getRealLevel() <= max_level)
-			return 40 - 7 * (getRealLevel() - 1);
-		else
-			return 40 - 7 * (max_level - 1) - 3 * (getRealLevel() - max_level);
+		return 75 - 13 * (getRealLevel() - 1);
 	}
 
 	int regenerated_this_tick; // how much HP was regenerated this tick; used by power recirculator legendary upgrade
-
-	// HDest values and timers
-
-	int regen_timer_hdbasehp;
-	int regen_timer_hdunstablewound;
-	int regen_timer_hdwound;
-	int regen_timer_hdburn;
-	int regen_timer_hdoldwound;
-	int regen_timer_hdaggravated;
-
-	protected int getHDUnstableWoundRegenInterval()
-	{ return 175 - 25 * (getRealLevel() - 1); }
-	protected int getHDWoundRegenInterval()
-	{ return 300 - 40 * (getRealLevel() - 1); }
-	protected int getHDBurnRegenInterval()
-	{ return 375 - 90 * (getRealLevel() - 1); }
-	protected int getHDOldWoundRegenInterval()
-	{ return 550 - 120 * (getRealLevel() - 1); }
-	protected int getHDAggravatedDamageRegenInterval()
-	{ return 700 - 130 * (getRealLevel() - 1); } // the timer is relatively small because aggravated damage is, well, HP points and not count of wounds
+	double consume_queue;
+	const consume_fact = 0.0125; // consumed health is multiplied by this
+	const consume_maxhp_frac = 0.01; // fraction of monster corpse's max hp consumed
+	const consume_hp = 1; // plain amount of hp consumed
+	const consume_radius = 90;
 
 	protected double getDSWoundRegenAmt()
 	{ return 0.003 + 0.003 * (getRealLevel() - 2); }
@@ -123,35 +110,33 @@ class DD_Aug_Regeneration : DD_Augmentation
 			Actor.Spawn("Blood", owner.pos + (frandom(-owner.radius, owner.radius), frandom(-owner.radius, owner.radius), owner.height / 2 + frandom(-owner.height / 3, 0)));
 	}
 
-	// -------------
-	// Engine events
-	// -------------
+	const gfx_line_roff = 3;
+	const gfx_line_step = 4;
+	void spawnConsumeGFX(Actor to)
+	{
+		vector3 pt = owner.pos + (0, 0, owner.height * 3./5);
+		vector3 dir = to.pos - pt;
+		uint steps = dir.length() / gfx_line_step;
+		if(dir.length() > 0) dir /= dir.length();
+		dir *= gfx_line_step;
+		pt -= owner.pos;
+		for(uint j = 0; j < steps; ++j, pt += dir){
+			owner.A_SpawnParticle(0x00FF4040, flags: SPF_NOTIMEFREEZE, lifetime: 1, size: 5, xoff: pt.x + frandom(-gfx_line_roff, gfx_line_roff), yoff: pt.y + frandom(-gfx_line_roff, gfx_line_roff), zoff: pt.z + frandom(-gfx_line_roff, gfx_line_roff), velx: owner.vel.x, vely: owner.vel.y, velz: owner.vel.z, startalphaf: 0.5);
+			owner.A_SpawnParticle(0x00DC9787, flags: SPF_NOTIMEFREEZE, lifetime: 1, size: 5, xoff: pt.x + frandom(-gfx_line_roff, gfx_line_roff), yoff: pt.y + frandom(-gfx_line_roff, gfx_line_roff), zoff: pt.z + frandom(-gfx_line_roff, gfx_line_roff), velx: owner.vel.x, vely: owner.vel.y, velz: owner.vel.z, startalphaf: 0.5);
+		}
+	}
 
 	override void tick()
 	{
+		super.tick();
 		regenerated_this_tick = 0;
 
 		if(!owner)
 			return;
-		if(owner.player)
-		{
-			if(fatal_tint_timer > 0)
-			{
-				--fatal_tint_timer;
-				double tint_str = 0.33 + ((double(fatal_tint_timer) / fatal_tint_time)  * 0.66);
-				Shader.setEnabled(owner.player, "DD_FatalRegen", true);
-				Shader.setUniform1f(owner.player, "DD_FatalRegen", "strength", tint_str);
-			}
-			else
-				Shader.setEnabled(owner.player, "DD_FatalRegen", false);
-		}
 
-		super.tick();
 		if(!enabled)
 			return;
-		if(fatal_regen_timer > 0)
-			--fatal_regen_timer;
-
+		
 		if(!(owner is "PlayerPawn")){
 			if(regen_timer > 0)
 				--regen_timer;
@@ -164,70 +149,57 @@ class DD_Aug_Regeneration : DD_Augmentation
 				spawnBloodGFX();
 			}
 		}
-		if(DD_ModChecker.isLoaded_HDest() && DD_PatchChecker.isLoaded_HDest())
-		{
-			// Regenerating overall health regardless
-			if(regen_timer_hdbasehp > 0)
-				--regen_timer_hdbasehp;
-			else{
-				spawnBloodGFX();
-				owner.giveInventory("Health", getHealthRegenRate());
-				regenerated_this_tick += getHealthRegenRate();
-				regen_timer_hdbasehp = getHealthRegenInterval();
-			}
 
-			// Regenerating wounds
-			Actor hg;
-			Class<Actor> hg_cls = ClassFinder.findActorClass("DD_HDHealthGiver");
-			if(hg_cls)
-				hg = Actor.spawn(hg_cls);
-			hg.target = owner;
+		if(!enabled)
+			return;
 
-			if(regen_timer_hdunstablewound > 0)
-				--regen_timer_hdunstablewound;
-			else{
-				hg.args[0] = 1;
-				regen_timer_hdunstablewound = getHDUnstableWoundRegenInterval();
-			}
-
-			if(regen_timer_hdwound > 0)
-				--regen_timer_hdwound;
-			else{
-				hg.args[1] = 1;
-				regen_timer_hdwound = getHDWoundRegenInterval();
-			}
-
-			if(getRealLevel() >= 2)
-			{
-				if(regen_timer_hdburn > 0)
-					--regen_timer_hdburn;
+		if(legend_installed == 0){
+			let it = BlockThingsIterator.create(owner, consume_radius);
+			double consumed_total = 0;
+			while(it.next()){
+				if(!it.thing.bISMONSTER || it.thing.health > 0)
+					continue;
+				let consume_token = DD_RegenConsumption(it.thing.findInventory("DD_RegenConsumption"));
+				if(!consume_token){
+					it.thing.giveInventory("DD_RegenConsumption", 1);
+					consume_token = DD_RegenConsumption(it.thing.findInventory("DD_RegenConsumption"));
+					consume_token.hp_left = it.thing.SpawnHealth();
+				}
+				if(consume_token.hp_left <= 0){
+					consume_token.destroy();
+					Actor.Spawn("RealGibs", it.thing.pos);
+					it.thing.destroy();
+				}
 				else{
-					hg.args[2] = 1;
-					regen_timer_hdburn = getHDBurnRegenInterval();
+					double consumed = min(consume_token.hp_left, it.thing.SpawnHealth() * consume_maxhp_frac + consume_hp);
+					consume_token.hp_left -= consumed;
+					consumed_total += consumed;
+					spawnConsumeGFX(it.thing);
+					if(random() == 65)
+						it.thing.A_StartSound("misc/gibbed", volume: 0.7);
 				}
 			}
-
-			if(getRealLevel() >= 3)
-			{
-				if(regen_timer_hdoldwound > 0)
-					--regen_timer_hdoldwound;
-				else{
-					hg.args[3] = 1;
-					regen_timer_hdoldwound = getHDOldWoundRegenInterval();
+			consume_queue += consumed_total * consume_fact;
+			if(consume_queue >= 1){
+				if(owner.giveInventory("Health", floor(consume_queue))){
+					regenerated_this_tick += floor(consume_queue);
+					consume_queue -= floor(consume_queue);
 				}
 			}
-
-			if(getRealLevel() >= 4)
+			if(DD_ModChecker.isLoaded_DeathStrider() && DD_PatchChecker.isLoaded_DeathStrider())
 			{
-				if(regen_timer_hdaggravated > 0)
-					--regen_timer_hdaggravated;
-				else{
-					hg.args[4] = 1;
-					regen_timer_hdaggravated = getHDAggravatedDamageRegenInterval();
-				}
+				Actor hg;
+				Class<Actor> hg_cls = ClassFinder.findActorClass("DD_DSHealthGiver");
+				if(hg_cls)
+					hg = Actor.spawn(hg_cls);
+				hg.target = owner;
+				if(getRealLevel() >= 2) hg.args[0] = consumed_total * 0.001 * 10000;
+				if(getRealLevel() >= 3) hg.args[1] = consumed_total * 0.001 * getDSBodyRegenAmt() * 10000;
+				if(getRealLevel() >= 4) hg.args[2] = consumed_total * 0.001 * getDSBloodRegenAmt() * 10000;
 			}
 		}
-		else if(DD_ModChecker.isLoaded_DeathStrider() && DD_PatchChecker.isLoaded_DeathStrider())
+
+		if(DD_ModChecker.isLoaded_DeathStrider() && DD_PatchChecker.isLoaded_DeathStrider())
 		{
 			// DeathStrider storing blood level and body integrity as doubles allows to just adjust the numbers instead of playing with timers
 			if(regen_timer > 0)
@@ -247,40 +219,26 @@ class DD_Aug_Regeneration : DD_Augmentation
 				if(getRealLevel() >= 4) hg.args[2] = getDSBloodRegenAmt() * 10000;
 
 				spawnBloodGFX();
-			}			
+			}
 		}
 		else
 		{
 			if(regen_timer > 0)
 				--regen_timer;
 			else{
-				if(!owner.giveInventory("Health", getHealthRegenRate()))
-					toggle();
+				bool do_toggle = false;
+				if(!owner.giveInventory(legend_installed == 1 ? "DD_200Health" : "Health", getHealthRegenRate()))
+					do_toggle = true;
+				if(legend_installed == 2){
+					owner.giveInventory("DD_120Armor", getHealthRegenRate() - 2);
+					do_toggle = owner.countinv("BasicArmor") >= 120;
+				}
 				regenerated_this_tick += getHealthRegenRate();
 				regen_timer = getHealthRegenInterval();
 				spawnBloodGFX();
+				if(do_toggle)
+					toggle();
 			}
-		}
-	}
-
-	override void ownerDamageTaken(int damage, Name damageType, out int newDamage,
-					Actor inflictor, Actor source, int flags)
-	{
-		if(!enabled)
-			return;
-
-		if(isLegendary() && damage >= owner.health && fatal_regen_timer == 0)
-		{ // save the user
-			for(uint i = 0; i < 4; ++i)
-				spawnBloodGFX();
-
-			owner.giveInventory("Health", fatal_regen_burst);
-			regenerated_this_tick += fatal_regen_burst;
-			owner.A_StartSound("play/aug/fatalsave1");
-			owner.A_StartSound("play/aug/fatalsave2");
-
-			fatal_tint_timer = fatal_tint_time;
-			fatal_regen_timer = fatal_regen_time;
 		}
 	}
 }

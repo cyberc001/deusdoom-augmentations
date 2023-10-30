@@ -31,15 +31,14 @@ class DD_Aug_CombatStrength : DD_Augmentation
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
-		disp_legend_desc = "LEGENDARY UPGRADE: after agent does not execute\n"
-				   "successful melee attacks for a while, next\n"
-				   "attack will be greatly empowered, either it is\n"
-				   "a single hit or a rapid combination of attacks.\n";
+		legend_count = 4;
+		legend_names[0] = "one much stronger attack on cooldown";
+		legend_names[1] = "cleave damage on attack";
+		legend_names[2] = "stacking damage against one target";
+		legend_names[3] = "one-shots sprees increase damage";
 
 		slots_cnt = 1;
 		slots[0] = Arms;
-
-		can_be_legendary = true;
 	}
 
 	override void UIInit()
@@ -48,56 +47,108 @@ class DD_Aug_CombatStrength : DD_Augmentation
 		tex_on = TexMan.CheckForTexture("COMBSTR1");
 	}
 
-	// ------------------	
-	// Internal functions
-	// ------------------
+	protected double getDamageFactor() { return 1 + 0.4 * getRealLevel() + (legend_installed == 0 && bonus_timer <= 0 ? 4 : 0) + stack_mul; }
 
-	protected double getDamageFactor() { return 1 + 0.75 * getRealLevel(); }
-
-	const lgbonus_cd = 35 * 15;
-	int lgbonus_cd_timer;
-	const lgbonus_time = 20;
-	int lgbonus_timer;
-	protected double getLegendaryDamageBonus() { return 4.5; }
-
-	// ------
-	// Events
-	// ------
+	override void toggle()
+	{
+		super.toggle();
+		if(!enabled)
+			stack_mul = 0;
+	}
 
 	override void tick()
 	{
 		super.tick();
+		if(legend_installed == 0)
+			hud_info = string.format("%.1g", bonus_timer / 35.);
+		else if(legend_installed == 2 || legend_installed == 3)
+			hud_info = (stack_mul > 0 ? string.format("+x%.2g", stack_mul) : "");
+
+		if(legend_installed == 2 && !stack_victim)
+			stack_mul = 0;
+
 		if(!owner)
 			return;
 
-		if(lgbonus_cd_timer > 0) --lgbonus_cd_timer;
-		if(lgbonus_timer > 0) --lgbonus_timer;
-
 		if(enabled)
 		{
+			if(bonus_timer > 0)
+				--bonus_timer;
+
 			Actor.Spawn("DD_CombatStrength_SmokeGFX", owner.pos + (0, 0, owner.height / 2) + RotateVector((owner.radius / 1.5, 0), owner.angle - 90) + (frandom(-3, 3), frandom(-3, 3), frandom(-1.5, 1.5))).A_ChangeVelocity(frandom(-0.5, 0.5), frandom(-0.5, 0.5), frandom(1, 4));
 			Actor.Spawn("DD_CombatStrength_SmokeGFX", owner.pos + (0, 0, owner.height / 2) + RotateVector((-owner.radius / 1.5, 0), owner.angle - 90) + (frandom(-3, 3), frandom(-3, 3), frandom(-1.5, 1.5))).A_ChangeVelocity(frandom(-0.5, 0.5), frandom(-0.5, 0.5), frandom(1, 4));
 		}
 	}
 
-	override void ownerDamageDealt(int damage, Name damageType, out int newDamage,
-					Actor inflictor, Actor source, int flags)
+	int bonus_timer;
+	const bonus_cd = 35 * 10;
+
+	bool cleave_now; // avoiding infinite recursion
+	const cleave_radius = 280;
+	const cleave_angle = 90;
+	const cleave_pitch = 40;
+
+	double stack_mul;
+	Actor stack_victim;
+	const stack_mul_inc = 0.5;
+	const stack_mul_dim = 4; // determines severity of diminishing returns
+	// same stacking but different numbers for upgrade 4
+	const os_stack_mul_inc = 0.6;
+	const os_stack_mul_dim = 3;
+
+	void doCleaveGFX()
 	{
-		if(!enabled)
+		for(double ang = -cleave_angle/2; ang <= cleave_angle/2; ang += cleave_angle / 8){
+			for(double pit = -cleave_pitch/2; pit <= cleave_pitch/2; pit += cleave_pitch / 8){
+				vector3 vel = (Actor.AngleToVector(ang + owner.angle, cos(pit + owner.pitch)), -sin(pit + owner.pitch));
+				vel *= 15;
+				vel += (frandom(-0.2, 0.2), frandom(-0.2, 0.2), frandom(-0.2, 0.2));
+				owner.A_SpawnParticle(0xFFFFFFFF, 0, lifetime: 15, size: 4,
+						zoff: owner.player.viewHeight,
+						velx: vel.x, vely: vel.y, velz: vel.z);
+			}
+		}
+	}
+
+	override void ownerDamageDealt(int damage, Name damageType, out int newDamage,
+					Actor inflictor, Actor victim, int flags)
+	{
+		if(!enabled || cleave_now)
 			return;
 
-		// source is actually the victim that got hit by augmentation owner (player)
-		if(RecognitionUtils.isHandToHandDamage(PlayerPawn(owner), inflictor, source, damageType, flags))
-		{
+		if(RecognitionUtils.isHandToHandDamage(PlayerPawn(owner), inflictor, victim, damageType, flags))
 			newDamage = damage * getDamageFactor();
-			if(isLegendary()){
-				if(lgbonus_cd_timer == 0)
-					lgbonus_timer = lgbonus_time;
-				if(lgbonus_timer > 0){
-					newDamage = newDamage * getLegendaryDamageBonus();
-				}
-				lgbonus_cd_timer = lgbonus_cd;
+		else
+			return;
+
+		if(legend_installed == 0 && bonus_timer <= 0)
+			bonus_timer = bonus_cd;
+		else if(legend_installed == 1){
+			cleave_now = true;
+			doCleaveGFX();
+			let it = BlockThingsIterator.create(owner, owner.radius + cleave_radius);
+			while(it.next()){
+				if(!it.thing.bSHOOTABLE || it.thing == owner || it.thing.bFRIENDLY || it.thing == victim)
+					continue;
+				double d_ang = AbsAngle(owner.AngleTo(it.thing), owner.angle);
+				double d_pitch = AbsAngle(owner.PitchTo(it.thing), owner.pitch);
+				if(d_ang <= cleave_angle && d_pitch <= cleave_pitch)
+					it.thing.DamageMobj(owner, owner, damage, damageType);
 			}
+			cleave_now = false;
+		}
+		else if(legend_installed == 2){
+			if(victim != stack_victim){
+				stack_victim = victim;
+				stack_mul = 0;
+			}
+			stack_mul += stack_mul_inc * max(1 - stack_mul / stack_mul_dim, 0);
+		}
+		else if(legend_installed == 3){
+			if(damage < victim.health)
+				stack_mul = 0;
+			else
+				stack_mul += os_stack_mul_inc * max(1 - stack_mul / os_stack_mul_dim, 0);
 		}
 	}
 }

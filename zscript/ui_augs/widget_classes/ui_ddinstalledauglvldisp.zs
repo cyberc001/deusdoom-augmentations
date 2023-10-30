@@ -29,8 +29,8 @@ class UI_DDInstalledAugLevelDisplay : UI_Widget
 		if(au)
 		{
 			TextureID ch;
-			if(au.legendary) ch = checklet_lgnd;
-			else		 ch = checklet;
+			if(au.legend_installed != -1) 	ch = checklet_lgnd;
+			else		 		ch = checklet;
 
 			for(uint lvl = 1; lvl <= au._level; ++lvl)
 			{

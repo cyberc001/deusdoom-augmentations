@@ -55,6 +55,8 @@ class DD_EnemyAugAI : Inventory
 		}
 
 		DD_AugsHolder aughld = DD_AugsHolder(owner.findInventory("DD_AugsHolder"));
+		if(!aughld)
+			return;
 		int bioel = owner.countInv("DD_BioelectricEnergy");
 
 		// ---- CLOAK ----

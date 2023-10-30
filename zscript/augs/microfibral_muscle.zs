@@ -5,6 +5,9 @@ class DD_MuscleToken : Inventory
 		Inventory.MaxAmount 4;
 	}
 }
+class DD_MoreMuscleToken : Inventory
+{
+}
 
 class DD_Aug_MicrofibralMuscle : DD_Augmentation
 {
@@ -31,15 +34,19 @@ class DD_Aug_MicrofibralMuscle : DD_Augmentation
 			    "(+attack) or throw them (+altattack).\n\n";
 
 		_level = 1;
-		disp_desc = disp_desc .. string.format("TECH ONE: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 200 * (getRealLevel() - 1));
+		disp_desc = disp_desc .. string.format("TECH ONE: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 150 * (getRealLevel() - 1));
 		_level = 2;
-		disp_desc = disp_desc .. string.format("TECH TWO: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 200 * (getRealLevel() - 1));
+		disp_desc = disp_desc .. string.format("TECH TWO: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 150 * (getRealLevel() - 1));
 		_level = 3;
-		disp_desc = disp_desc .. string.format("TECH THREE: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 200 * (getRealLevel() - 1));
+		disp_desc = disp_desc .. string.format("TECH THREE: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 150 * (getRealLevel() - 1));
 		_level = 4;
-		disp_desc = disp_desc .. string.format("TECH FOUR: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 200 * (getRealLevel() - 1));
+		disp_desc = disp_desc .. string.format("TECH FOUR: Maximum damage by throwing is %g.\nSubdue health limit is %d.\n\n", round((50 + (getRealLevel() - 1) * 100)), 150 + 150 * (getRealLevel() - 1));
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
+
+		legend_count = 2;
+		legend_names[0] = "subdue health +400, subdue damage x3";
+		legend_names[1] = "x2 throw damage, x2 throw distance";
 
 		slots_cnt = 1;
 		slots[0] = Arms;
@@ -64,7 +71,7 @@ class DD_Aug_MicrofibralMuscle : DD_Augmentation
 	Weapon owner_last_weapon;
 	protected clearscope bool canSubdue(Actor a)
 	{
-		return a.bISMONSTER && a.health <= 150 + 200 * (getRealLevel() - 1);
+		return a.bISMONSTER && a.health <= 150 + 150 * (getRealLevel() - 1) + (legend_installed == 0 ? 400 : 0);
 	}
 	void subdueStart()
 	{
@@ -104,7 +111,10 @@ class DD_Aug_MicrofibralMuscle : DD_Augmentation
 			return;
 
 		owner.takeInventory("DD_MuscleToken", 999999);
-		owner.giveInventory("DD_MuscleToken", getRealLevel());
+		owner.takeInventory("DD_MoreMuscleToken", 999999);
+		owner.giveinventory("DD_MuscleToken", getreallevel());
+		if(legend_installed == 1)
+			owner.giveInventory("DD_MoreMuscleToken", 1);
 
 		if(subdue_target){
 			if(subdue_target.health <= 0){
@@ -174,13 +184,14 @@ class DD_MuscleHolder : Weapon
 		if(toss){
 			vector3 dir = (Actor.AngleToVector(angle, cos(pitch)), -sin(pitch));
 			dir *= (13 + 7 * pickup_level) / my_mass;
+			dir *= (invoker.aug.legend_installed == 1 ? 2 : 1);
 			invoker.holding.A_ChangeVelocity(dir.x, dir.y, dir.z, CVF_REPLACE);
 			if(pickup_level > 0){
 				invoker.holding.giveInventory("DD_PickupDamager", 1);
 				invoker.aug.subdueEnd();
 				let dmgr = DD_PickupDamager(invoker.holding.findInventory("DD_PickupDamager"));
 				dmgr.thrower = self;
-				dmgr.damage = (50 + (pickup_level - 1) * 100) * 2.7**(-((my_mass - 0.8)**2) / (2*0.6**2));
+				dmgr.damage = (30 + (pickup_level - 1) * 60) * 2.7**(-((my_mass - 0.8)**2) / (2*0.6**2)) * (invoker.aug.legend_installed == 1 ? 2 : 1);
 				dmgr.source = self;
 				dmgr.init_vel = invoker.holding.vel;
 			}
@@ -251,7 +262,7 @@ class DD_MuscleHolder : Weapon
 			TNT1 A 1 {
 				if(--invoker.pain_sound_delay <= 0){
 					let pickup_level = countinv("DD_MuscleToken");
-					invoker.holding.DamageMobj(self, self, 8 + pickup_level * 10, "None", DMG_FORCED | DMG_NO_PROTECT);
+					invoker.holding.DamageMobj(self, self, (8 + pickup_level * 10) * (invoker.aug.legend_installed == 0 ? 3 : 1), "None", DMG_FORCED | DMG_NO_PROTECT);
 					SpawnHurtParticles();
 					invoker.holding.A_StartSound(invoker.holding.PainSound, volume: 0.5);
 					invoker.pain_sound_delay = random(pain_sound_delay_min, pain_sound_delay_max);

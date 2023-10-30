@@ -60,18 +60,14 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
-		disp_legend_desc = "LEGENDARY UPGRADE: If the nanites forming\n"
-				   "see an opportunity to hack or change the\n"
-				   "inner structure of a projectile directed\n"
-				   "towards agent, they execute it using a modified\n"
-				   "version of the same aerosol.\nu";
+		legend_count = 2;
+		legend_names[0] = "Reflect projectiles";
+		legend_names[1] = "Destroy all projectiles";
 
 		slots_cnt = 1;
 		slots[0] = Cranial;
 
 		initProjection();
-
-		can_be_legendary = true;
 	}
 
 	override void UIInit()
@@ -79,10 +75,6 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 		tex_off = TexMan.checkForTexture("AGRDSYS0");
 		tex_on = TexMan.checkForTexture("AGRDSYS1");
 	}
-
-	// ------------------
-	// Internal functions
-	// ------------------
 
 	int destr_cd;		    // projectile desctruction cooldown
 
@@ -95,20 +87,14 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 	}
 	int getBaseCD()
 	{
-		if(getRealLevel() <= max_level)
-			return (57 - 15 * (getRealLevel() - 1)) * (owner && owner.bIsMonster ? 1.6 : 1);
-		else
-			return (57 - 15 * (max_level - 1) - 4 * (getRealLevel() - max_level)) * (owner.bIsMonster ? 1.6 : 1);
+		return (55 - 10 * (getRealLevel() - 1)) * (owner && owner.bIsMonster ? 1.6 : 1);
 	}
 
 	array<double> proj_dispx;
 	array<double> proj_dispy;
 	array<double> proj_dispz;
 
-	const reflect_prinst_cd = 2; // cooldown of projectile redirection in projectile detection instances
-	int reflect_prinst; // current projectile detection instance
-	const reflect_mul = 2; // multiplicator of velocity of reflected projectiles
-
+	const reflect_mul = 2; // velocity factor of reflected projectiles
 
 	void detonateProjInRange()
 	{
@@ -122,7 +108,7 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 		proj_dispz.clear();
 
 		Actor proj;
-		double cd_ml;
+		double cd_ml = 1;
 		let ddevh = DD_AugsEventHandler(StaticEventHandler.Find("DD_AugsEventHandler"));
 		for(uint i = 0; i < ddevh.proj_list.size(); ++i)
 		{
@@ -131,7 +117,9 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 				ddevh.proj_list.delete(i); --i; continue;
 			}
 
-			if(!RecognitionUtils.projCanBeDestroyed(proj, cd_ml, owner.bIsMonster) || owner.Distance3D(proj) > getRange() * 8.0 || proj.target == owner || (owner.bIsMonster && proj.target && proj.target.bIsMonster && proj.tracer != owner))
+			bool can_destroy = legend_installed == 1 || RecognitionUtils.projCanBeDestroyed(proj, cd_ml, owner.bIsMonster);
+
+			if(proj.countinv("DD_ProjDied") || !can_destroy || owner.Distance3D(proj) > getRange() * 8.0 || proj.target == owner || (owner.bIsMonster && proj.target && proj.target.bIsMonster && proj.tracer != owner))
 				continue;
 			if(owner.Distance3D(proj) > getRange()) {
 				proj_dispx.push(proj.pos.x);
@@ -139,41 +127,33 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 				proj_dispz.push(proj.pos.z);
 			}
 			else {
-				if(isLegendary() && reflect_prinst == reflect_prinst_cd) {
-					reflect_prinst = 0;
-
-					if(proj.bSEEKERMISSILE)
-						proj.A_ChangeVelocity(-proj.vel.x,
+				if(destr_cd == 0){
+					Actor.Spawn("DD_AggressiveDefenseSystem_FlashGFX", proj.pos);
+					destr_cd = getBaseCD() * cd_ml * (legend_installed == 1 ? min(max(proj.speed / 10., 1), 4) : 1);
+					proj.giveInventory("DD_ProjDied", 1);
+					if(legend_installed == 0){
+						if(proj.bSEEKERMISSILE)
+							proj.A_ChangeVelocity(-proj.vel.x,
 								     -proj.vel.y,
 								     -proj.vel.z, CVF_REPLACE);
-					else
-						proj.A_ChangeVelocity(-proj.vel.x * reflect_mul,
+						else
+							proj.A_ChangeVelocity(-proj.vel.x * reflect_mul,
 								     -proj.vel.y * reflect_mul,
 								     -proj.vel.z * reflect_mul, CVF_REPLACE);
 
-					proj.tracer = proj.target;
-					proj.target = owner;
+						proj.tracer = proj.target;
+						proj.target = owner;
 
-					proj.giveInventory("DD_ProjDamageMod", 1);
-					let dmod = DD_ProjDamageMod(proj.findInventory("DD_ProjDamageMod"));
-					dmod.mult = 3.0;
-				}
-				else{
-					if(isLegendary())
-						reflect_prinst++;
-					if (destr_cd == 0) {
-						Actor.Spawn("DD_AggressiveDefenseSystem_FlashGFX", proj.pos);
-						proj.die(proj, proj);
-						destr_cd = getBaseCD() * cd_ml;
+						proj.giveInventory("DD_ProjDamageMod", 1);
+						let dmod = DD_ProjDamageMod(proj.findInventory("DD_ProjDamageMod"));
+						dmod.mult = 2.0;
 					}
+					else
+						proj.die(proj, proj);
 				}
 			}
 		}
 	}
-
-	// ------
-	// Events
-	// ------
 
 	override void tick()
 	{
@@ -264,10 +244,11 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 	}
 }
 
+class DD_ProjDied : Inventory {}
 class DD_ProjDamageMod : Inventory
 {
 	double mult;
-	// multiplication is done through DD_EventHandler, sadly
+	// multiplication is done through DD_EventHandler
 }
 
 class DD_AggressiveDefenseSystem_FlashGFX : Actor
@@ -279,7 +260,8 @@ class DD_AggressiveDefenseSystem_FlashGFX : Actor
 		+BRIGHT
 		+NOTELEPORT
 
-		XScale 0.2;	YScale 0.2;
+		XScale 0.2;
+		YScale 0.2;
 	}
 
 	vector2 scale;

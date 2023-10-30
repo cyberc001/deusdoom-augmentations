@@ -20,7 +20,8 @@ class DD_Aug_Targeting : DD_Augmentation
 		disp_name = "Targeting";
 		disp_desc = "Image-scaling and recognition provided by multiplexing\n"
 			    "the optic nerve with doped polyacetylene \"quantum\n"
-			    "wires\" delivers situational info about a target.\n\n";
+			    "wires\" delivers situational info about a target and\n"
+			    "helps inflict more damage against it.\n\n";
 
 		_level = 1;
 		disp_desc = disp_desc .. string.format("TECH ONE: Damage bonus is %g%%.\nHealth is visible.\n\n", (getDamageFactor() - 1) * 100);
@@ -32,6 +33,10 @@ class DD_Aug_Targeting : DD_Augmentation
 		disp_desc = disp_desc .. string.format("TECH FOUR: Damage bonus is %g%%.\nAugmentation levels are visible.\n\n", (getDamageFactor() - 1) * 100);
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
+
+		legend_count = 2;
+		legend_names[0] = "increase damage against any enemy";
+		legend_names[1] = "+20% damage increase";
 
 		slots_cnt = 1;
 		slots[0] = Eyes;
@@ -101,7 +106,7 @@ class DD_Aug_Targeting : DD_Augmentation
 		string ss = "look";
 	}
 
-	protected double getDamageFactor() { return 1.08 + 0.05 * getRealLevel(); }
+	protected double getDamageFactor() { return 1.07 + 0.04 * getRealLevel() + (legend_installed == 1 ? 0.2 : 0); }
 
 	override void ownerDamageDealt(int damage, Name damageType, out int newDamage,
 					Actor inflictor, Actor victim, int flags)
@@ -109,7 +114,8 @@ class DD_Aug_Targeting : DD_Augmentation
 		if(!enabled)
 			return;
 
-		newDamage = damage * getDamageFactor();
+		if(victim == last_target_obj || legend_installed == 1)
+			newDamage = damage * getDamageFactor();
 	}
 
 	override void drawOverlay(RenderEvent e, DD_EventHandler hndl)

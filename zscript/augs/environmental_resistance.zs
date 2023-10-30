@@ -2,10 +2,11 @@ class DD_Aug_EnvironmentalResistance : DD_Augmentation
 {
 	ui TextureID tex_off;
 	ui TextureID tex_on;
+	ui TextureID tex_passive;
 
 	override TextureID get_ui_texture(bool state)
 	{
-		return state ? tex_on : tex_off;
+		return passive ? tex_passive : (state ? tex_on : tex_off);
 	}
 
 	override int get_base_drain_rate(){ return 40; }
@@ -31,83 +32,38 @@ class DD_Aug_EnvironmentalResistance : DD_Augmentation
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
-		disp_legend_desc = "LEGENDARY UPGRADE: Energy emitted by hazard\n"
-				      "surfaces is converted to bioelectric energy. This\n"
-				      "makes such surfaces quickly give away their energy,\n"
-				      "eliminating the hazard entirely.";
-
 		slots_cnt = 3;
 		slots[0] = Torso1;
 		slots[1] = Torso2;
 		slots[2] = Torso3;
 
-		can_be_legendary = true;
+		legend_count = 2;
+		legend_names[0] = "augmentation works passively";
+		legend_names[1] = "heal on top of hurtfloors";
 	}
 
 	override void UIInit()
 	{
 		tex_off = TexMan.CheckForTexture("ENVRES0");
 		tex_on = TexMan.CheckForTexture("ENVRES1");
+		tex_passive = TexMan.CheckForTexture("ENVRES2");
 	}
-
-	// ------------------
-	// Internal functions
-	// ------------------
-
-	protected double getProtectionFactor()
-	{
-		if(getRealLevel() <= max_level)
-			return 0.25 + 0.25 * (getRealLevel() - 1);
-		else
-			return 0.25 + 0.25 * (max_level - 1);
-	}
-
-	// -------------
-	// Engine events
-	// -------------
-
-	const dissipation_time = 35 * 15; // time to completely get rid of damaging property of a sector
-	const energy_for_dissipation = 40;
-	double energy_gain_queue;
 
 	override void tick()
 	{
 		super.tick();
-		if(!enabled)
-			return;
+		passive = (legend_installed == 0);
+	}
 
-		if(isLegendary() && owner.floorsector.damageamount > 0)
-		{
-			let deh = DD_AugsEventHandler(StaticEventHandler.find("DD_AugsEventHandler"));
-			uint i = deh.dissipating_sectors.find(owner.floorsector);
-			if(i == deh.dissipating_sectors.size()) {
-				deh.dissipating_sectors.push(owner.floorsector);
-				deh.dissipating_damage.push(owner.floorsector.damageamount);
-				deh.dissipating_timers.push(dissipation_time);
-			}
-			else {
-				--deh.dissipating_timers[i];
-				deh.dissipating_sectors[i].damageamount = ceil(deh.dissipating_damage[i] * (double(deh.dissipating_timers[i]) / dissipation_time));
-				energy_gain_queue += double(energy_for_dissipation) / dissipation_time;
-				if(energy_gain_queue >= 1.0){
-					energy_gain_queue -= 1.0;
-					owner.giveInventory("DD_BioelectricEnergy", 1);
-				}
-
-				if(deh.dissipating_timers[i] <= 0){
-					console.printf("Cleared hazardous surface at (%f; %f)", deh.dissipating_sectors[i].centerspot.x, deh.dissipating_sectors[i].centerspot.y); 
-					deh.dissipating_sectors.delete(i);
-					deh.dissipating_damage.delete(i);
-					deh.dissipating_timers.delete(i);
-				}
-			}
-		}
+	protected double getProtectionFactor()
+	{
+		return 0.25 + 0.25 * (getRealLevel() - 1);
 	}
 
 	override void ownerDamageTaken(int damage, Name damageType, out int newDamage,
 					Actor inflictor, Actor source, int flags)
 	{
-		if(!enabled)
+		if(!enabled && !passive)
 			return;
 
 		double protfact_ml;
@@ -118,6 +74,22 @@ class DD_Aug_EnvironmentalResistance : DD_Augmentation
 			aughld.absorbtion_msg = String.Format("%.0f%% ABSORB", getProtectionFactor() * 100 * protfact_ml);
 			aughld.absorbtion_msg_timer = 35 * 1;
 			aughld.doGFXResistance();
+
+			if(legend_installed == 1){
+				if(DD_ModChecker.isLoaded_DeathStrider() && DD_PatchChecker.isLoaded_DeathStrider()){
+					owner.giveInventory("Health", ceil(damage / 3.));
+					Actor hg;
+					Class<Actor> hg_cls = ClassFinder.findActorClass("DD_DSHealthGiver");
+					if(hg_cls)
+						hg = Actor.spawn(hg_cls);
+					hg.target = owner;
+					hg.args[0] = 0.003 * 10000;
+					hg.args[1] = 0.002 * 10000;
+					hg.args[2] = 0.002 * 10000;
+				}			
+				else
+					owner.giveInventory("Health", 3);
+			}
 		}
 	}
 }

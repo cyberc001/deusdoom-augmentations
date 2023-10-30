@@ -35,6 +35,10 @@ class DD_Aug_SpeedEnhancement : DD_Augmentation
 		enabled = false;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
+		legend_count = 2;
+		legend_names[0] = "almost instant deceleration";
+		legend_names[1] = "slow down enemies around you";
+
 		slots_cnt = 1;
 		slots[0] = Legs;
 	}
@@ -45,29 +49,74 @@ class DD_Aug_SpeedEnhancement : DD_Augmentation
 		tex_on = TexMan.CheckForTexture("SPEED1");
 	}
 
-
-	// ------------------
-	// Internal functions
-	// ------------------
-
 	override double getSpeedFactor()
 	{
 		if(enabled)
 			return 1.20 + 0.20 * (getRealLevel() - 1);
 		return 1.0;
 	}
-	protected double getJumpFactor() { return 0.35 + 0.35 * (getRealLevel() - 1); }
-	clearscope double getDecelerateFactor() { return 0.25 + 0.2 * (getRealLevel() - 1); }
+	protected double getJumpFactor() { return 0.4 + 0.4 * (getRealLevel() - 1); }
+	clearscope double getDecelerateFactor() { return 0.25 + 0.2 * (getRealLevel() - 1) + (legend_installed == 0 ? 2 : 0); }
 
+	const enemy_speed_mul = 0.7;
+	const enemy_speed_radius = 160;
+	array<Actor> affected_enemies;
+	array<double> prev_speeds;
 
-	// -------------
-	// Engine events
-	// -------------
+	const gfx_line_roff = 1;
+	const gfx_line_step = 5;
+	private void doSlowGFX()
+	{
+		// draw lines to slowed enemies
+		for(uint i = 0; i < affected_enemies.size(); ++i){
+			vector3 pt = owner.pos + (0, 0, 10);
+			vector3 dir = affected_enemies[i].pos - pt;
+			uint steps = dir.length() / gfx_line_step;
+			if(dir.length() > 0) dir /= dir.length();
+			dir *= gfx_line_step;
+			pt -= owner.pos;
+			for(uint j = 0; j < steps; ++j, pt += dir){
+				owner.A_SpawnParticle(0x000000AA, flags: SPF_NOTIMEFREEZE, lifetime: 1, size: 5, xoff: pt.x + frandom(-gfx_line_roff, gfx_line_roff), yoff: pt.y + frandom(-gfx_line_roff, gfx_line_roff), zoff: pt.z + frandom(-gfx_line_roff, gfx_line_roff), velx: owner.vel.x, vely: owner.vel.y, velz: owner.vel.z, startalphaf: 0.5);
+				owner.A_SpawnParticle(0x000070AA, flags: SPF_NOTIMEFREEZE, lifetime: 1, size: 5, xoff: pt.x + frandom(-gfx_line_roff, gfx_line_roff), yoff: pt.y + frandom(-gfx_line_roff, gfx_line_roff), zoff: pt.z + frandom(-gfx_line_roff, gfx_line_roff), velx: owner.vel.x, vely: owner.vel.y, velz: owner.vel.z, startalphaf: 0.5);
+			}
+		}	
+	}
 
 	override void tick()
 	{
+		super.tick();
+		if(legend_installed == 1){
+			for(uint i = 0; i < affected_enemies.size(); ++i){
+				if(!affected_enemies[i]){
+					affected_enemies.delete(i);
+					prev_speeds.delete(i);
+					--i; continue;
+				}
+			}
+			for(uint i = 0; i < affected_enemies.size(); ++i){
+				if(!enabled || owner.Distance3D(affected_enemies[i]) - affected_enemies[i].radius > enemy_speed_radius){
+					affected_enemies[i].speed = prev_speeds[i];
+					affected_enemies.delete(i);
+					prev_speeds.delete(i);
+					--i; continue;
+				}
+			}
+		}
+
 		if(!enabled)
 			return;
+
+		if(legend_installed == 1){
+			let it = BlockThingsIterator.create(owner, enemy_speed_radius);
+			while(it.next()){
+				if(!it.thing.bISMONSTER || it.thing.bFRIENDLY || it.thing.health <= 0 || affected_enemies.find(it.thing) != affected_enemies.size())
+					continue;
+				affected_enemies.push(it.thing);
+				prev_speeds.push(it.thing.speed);
+				it.thing.speed *= enemy_speed_mul;
+			}
+			doSlowGFX();
+		}
 
 		if(abs(queue.deacc) > 0)
 		{

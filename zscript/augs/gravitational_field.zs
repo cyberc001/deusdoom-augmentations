@@ -9,7 +9,7 @@ class DD_Aug_GravitationalField : DD_Augmentation
 		return !state ? tex_off : tex_on;
 	}
 
-	override int get_base_drain_rate(){ return 100; }
+	override int get_base_drain_rate() { return 100; }
 
 	override void install()
 	{
@@ -30,6 +30,10 @@ class DD_Aug_GravitationalField : DD_Augmentation
 		_level = 1;
 		disp_desc = disp_desc .. string.format("Energy Rate: %d Units/Minute\n\n", get_base_drain_rate());
 
+		legend_count = 2;
+		legend_names[0] = "almost halt projectiles up to a certain sum of speeds";
+		legend_names[1] = "repulse projectiles in 30 degree FOV";
+
 		slots_cnt = 2;
 		slots[0] = Subdermal1;
 		slots[1] = Subdermal2;
@@ -41,17 +45,13 @@ class DD_Aug_GravitationalField : DD_Augmentation
 		tex_on = TexMan.CheckForTexture("EMPSHLD1");
 	}
 
-	// ------------------
-	// Internal functions
-	// ------------------
+	double speed_sum;
+	const max_speed_sum = 30;
+	const repulse_fov = 30;
 	
-	protected double getSpeedReduction() { return 0.5 + 0.07 * (getRealLevel() - 1); }
+	protected double getSpeedReduction() { return (legend_installed == 0 && speed_sum <= max_speed_sum) ? 1 : (0.45 + 0.02 * (getRealLevel() - 1)); }
 	protected double getMinSpeed() { return 2 - 0.35 * (getRealLevel() - 1); }
-	protected double getRange() { return 85 + 15 * (getRealLevel() - 1); }
-
-	// -------------
-	// Engine events
-	// -------------
+	protected double getRange() { return 95 + 10 * (getRealLevel() - 1); }
 
 	array<Actor> affected_projectiles;
 	array<double> prev_speeds;
@@ -67,6 +67,7 @@ class DD_Aug_GravitationalField : DD_Augmentation
 	const gfx_line_step = 5;
 	private void doGFX()
 	{
+		// draw AoE range sphere
 		double radius = getRange() - gfx_sph_roff * 100;
 		for(double pit = -66; pit < 66; pit += 11){
 			for(double ang = 0; ang < 360; ang += 12){
@@ -78,6 +79,7 @@ class DD_Aug_GravitationalField : DD_Augmentation
 			}
 		}
 
+		// draw lines to slowed projectiles
 		for(uint i = 0; i < affected_projectiles.size(); ++i){
 			vector3 pt = owner.pos + (0, 0, owner.height * 3./5);
 			vector3 dir = affected_projectiles[i].pos - pt;
@@ -94,9 +96,14 @@ class DD_Aug_GravitationalField : DD_Augmentation
 	override void tick()
 	{
 		super.tick();
+
+		if(legend_installed == 0)
+			hud_info = string.format("%g/%d", speed_sum, max_speed_sum);
+
 		for(uint i = 0; i < affected_projectiles.size(); ++i)
 			if(!affected_projectiles[i]){
 				affected_projectiles.delete(i);
+				speed_sum -= prev_speeds[i];
 				prev_speeds.delete(i);
 				--i; continue;
 			}
@@ -106,8 +113,18 @@ class DD_Aug_GravitationalField : DD_Augmentation
 				vector3 new_vel = rescaleVector(affected_projectiles[i].vel, prev_speeds[i]);
 				affected_projectiles[i].A_ChangeVelocity(new_vel.x, new_vel.y, new_vel.z, CVF_REPLACE);
 				affected_projectiles.delete(i);
+				speed_sum -= prev_speeds[i];
 				prev_speeds.delete(i);
 				--i; continue;
+			} else if(legend_installed == 1 && AbsAngle(owner.angle, owner.angleTo(affected_projectiles[i])) <= repulse_fov / 2.){
+				vector3 u = affected_projectiles[i].vel.length() > 0 ? affected_projectiles[i].vel.unit() : affected_projectiles[i].vel;
+				vector2 vel_off = (u.x, u.y);
+				if(DeltaAngle(owner.angle, owner.angleTo(affected_projectiles[i])) < 0)
+					vel_off = RotateVector(vel_off, 90);
+				else
+					vel_off = RotateVector(vel_off, -90);
+				vel_off *= 0.2;
+				affected_projectiles[i].A_ChangeVelocity(vel_off.x, vel_off.y);
 			}
 		}
 
@@ -126,6 +143,7 @@ class DD_Aug_GravitationalField : DD_Augmentation
 				continue;
 			affected_projectiles.push(proj);
 			prev_speeds.push(proj.vel.length());
+			speed_sum += proj.vel.length();
 			double _speed = proj.vel.length() * (1 - getSpeedReduction());
 
 			if(_speed < getMinSpeed())

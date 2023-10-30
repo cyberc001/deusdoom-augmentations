@@ -1,4 +1,4 @@
-CLASS DD_AugmentationCanister : DDItem
+class DD_AugmentationCanister : DDItem
 {
 	default
 	{
@@ -9,10 +9,8 @@ CLASS DD_AugmentationCanister : DDItem
 		Tag "Augmentation cannister";
 
 		Scale 0.4;
-
 		+DONTGIB;
 	}
-
 	states
 	{
 		Spawn:
