@@ -308,6 +308,8 @@ class DD_AugsHolder : Inventory
 		DD_InventoryHolder hld = DD_InventoryHolder(owner.findInventory("DD_InventoryHolder"));
 		if(hld){
 			DD_InventoryWrapper item = hld.findItem("DD_AugmentationCanister");
+			if(!item)
+				return false;
 			--item.amount;
 			if(item.amount <= 0)
 				hld.removeItem(item);
