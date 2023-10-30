@@ -290,4 +290,10 @@ class DD_AugmentationCanister : DDItem
 
 		return true;
 	}
+
+	override bool TryPickup(in out Actor toucher)
+	{
+		AttachToOwner(toucher);
+		return false;
+	}
 }
