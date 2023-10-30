@@ -3,15 +3,15 @@ AddOptionMenu "DD_Controls"
 	Control "Open/close augmentations interface",			dd_togg_ui_augs
 	Control "Use a bioelectric cell",				dd_use_cell
 	StaticText "Augmentations", Purple
-	Control "Activate/deactive augmentation in subdermal slot 1",	dd_togg_aug_1
-	Control "Activate/deactive augmentation in subdermal slot 2",	dd_togg_aug_2
-	Control "Activate/deactive augmentation in cranial slot",	dd_togg_aug_3
-	Control	"Activate/deactive augmentation in arms slot",		dd_togg_aug_4
-	Control "Activate/deactive augmentation in legs slot",		dd_togg_aug_5
-	Control "Activate/deactive augmentation in eyes slot",		dd_togg_aug_6
-	Control "Activate/deactive augmentation in torso slot 1",	dd_togg_aug_7
-	Control "Activate/deactive augmentation in torso slot 2",	dd_togg_aug_8
-	Control "Activate/deactive augmentation in torso slot 3",	dd_togg_aug_9
+	Control "Activate/deactive augmentation in subdermal slot 1",	dd_togg_aug_0
+	Control "Activate/deactive augmentation in subdermal slot 2",	dd_togg_aug_1
+	Control "Activate/deactive augmentation in cranial slot",	dd_togg_aug_2
+	Control	"Activate/deactive augmentation in arms slot",		dd_togg_aug_3
+	Control "Activate/deactive augmentation in legs slot",		dd_togg_aug_4
+	Control "Activate/deactive augmentation in eyes slot",		dd_togg_aug_5
+	Control "Activate/deactive augmentation in torso slot 1",	dd_togg_aug_6
+	Control "Activate/deactive augmentation in torso slot 2",	dd_togg_aug_7
+	Control "Activate/deactive augmentation in torso slot 3",	dd_togg_aug_8
 	Control "Activate all augmentations",				dd_togg_aug_all_on
 	Control "Deactivate all augmentations",				dd_togg_aug_all_off
 	StaticText "Agility enhancement augmentation", Purple
