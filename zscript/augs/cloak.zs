@@ -13,7 +13,7 @@ class DD_Aug_Cloak : DD_Augmentation
 	const bonus_drain_inc = 7;
 	override int get_base_drain_rate()
 	{
-		return (290 - 35 * (getRealLevel() - 1)) * (owner && owner.bISMONSTER ? 0.35 : 1) + bonus_drain;
+		return (250 - 30 * (getRealLevel() - 1)) * (owner && owner.bISMONSTER ? 0.35 : 1) + bonus_drain;
 	}
 
 	override void install()

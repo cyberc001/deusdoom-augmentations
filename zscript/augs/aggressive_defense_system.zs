@@ -80,14 +80,11 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 
 	clearscope double getRange()
 	{
-		if(getRealLevel() <= max_level)
-			return (140 + 20 * (getRealLevel() - 1)) * (owner && owner.bIsMonster ? 0.6 : 1);
-		else
-			return (140 + 20 * (max_level - 1) + 10 * (getRealLevel() - max_level)) * (owner.bIsMonster ? 0.6 : 1);
+		return 140 + 20 * (getRealLevel() - 1);
 	}
 	int getBaseCD()
 	{
-		return (55 - 10 * (getRealLevel() - 1)) * (owner && owner.bIsMonster ? 1.6 : 1);
+		return (55 - 10 * (getRealLevel() - 1)) * (owner && owner.bIsMonster ? 3 : 1);
 	}
 
 	array<double> proj_dispx;

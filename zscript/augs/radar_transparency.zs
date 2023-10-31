@@ -15,7 +15,7 @@ class DD_Aug_RadarTransparency : DD_Augmentation
 
 	override int get_base_drain_rate()
 	{
-		return (290 - 35 * (getRealLevel() - 1)) * (blinktimer == 0 ? 1 : 0.5);
+		return (250 - 30 * (getRealLevel() - 1)) * (blinktimer == 0 ? 1 : 0.5);
 	}
 
 	override void install()

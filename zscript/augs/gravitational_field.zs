@@ -9,7 +9,7 @@ class DD_Aug_GravitationalField : DD_Augmentation
 		return !state ? tex_off : tex_on;
 	}
 
-	override int get_base_drain_rate() { return 100; }
+	override int get_base_drain_rate() { return 90; }
 
 	override void install()
 	{
@@ -46,12 +46,12 @@ class DD_Aug_GravitationalField : DD_Augmentation
 	}
 
 	double speed_sum;
-	const max_speed_sum = 30;
+	const max_speed_sum = 50;
 	const repulse_fov = 30;
 	
-	protected double getSpeedReduction() { return (legend_installed == 0 && speed_sum <= max_speed_sum) ? 1 : (0.45 + 0.02 * (getRealLevel() - 1)); }
+	protected double getSpeedReduction() { return (legend_installed == 0 && speed_sum <= max_speed_sum) ? 1 : (0.56 + 0.06 * (getRealLevel() - 1)); }
 	protected double getMinSpeed() { return 2 - 0.35 * (getRealLevel() - 1); }
-	protected double getRange() { return 95 + 10 * (getRealLevel() - 1); }
+	protected double getRange() { return 120 + 15 * (getRealLevel() - 1); }
 
 	array<Actor> affected_projectiles;
 	array<double> prev_speeds;
@@ -123,7 +123,7 @@ class DD_Aug_GravitationalField : DD_Augmentation
 					vel_off = RotateVector(vel_off, 90);
 				else
 					vel_off = RotateVector(vel_off, -90);
-				vel_off *= 0.2;
+				vel_off *= 0.22;
 				affected_projectiles[i].A_ChangeVelocity(vel_off.x, vel_off.y);
 			}
 		}
