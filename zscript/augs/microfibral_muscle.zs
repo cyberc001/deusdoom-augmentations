@@ -117,19 +117,14 @@ class DD_Aug_MicrofibralMuscle : DD_Augmentation
 			owner.giveInventory("DD_MoreMuscleToken", 1);
 
 		if(subdue_target){
-			if(subdue_target.health <= 0){
-				subdueEnd();
-			}
-			else {
-				subdue_target.A_ChangeVelocity(0, 0, 0, CVF_REPLACE);
-				double pit = owner.pitch > 0 ? min(65, owner.pitch) : max(-65, owner.pitch);
-				vector3 dir = (Actor.AngleToVector(owner.angle, cos(pit)), -sin(pit));
-				dir *= (subdue_off + owner.radius + subdue_target.radius);
-				dir += (0, 0, owner.player.viewHeight * 0.8);
-				subdue_target.warp(owner, dir.x, dir.y, dir.z, flags: WARPF_NOCHECKPOSITION | WARPF_ABSOLUTEOFFSET | WARPF_ABSOLUTEANGLE | WARPF_INTERPOLATE);
+			subdue_target.A_ChangeVelocity(0, 0, 0, CVF_REPLACE);
+			double pit = owner.pitch > 0 ? min(65, owner.pitch) : max(-65, owner.pitch);
+			vector3 dir = (Actor.AngleToVector(owner.angle, cos(pit)), -sin(pit));
+			dir *= (subdue_off + owner.radius + subdue_target.radius);
+			dir += (0, 0, owner.player.viewHeight * 0.8);
+			subdue_target.warp(owner, dir.x, dir.y, dir.z, flags: WARPF_NOCHECKPOSITION | WARPF_ABSOLUTEOFFSET | WARPF_ABSOLUTEANGLE | WARPF_INTERPOLATE);
 
-				subdue_target.triggerPainChance("None", true);
-			}
+			subdue_target.triggerPainChance("None", true);
 		}
 	}
 
