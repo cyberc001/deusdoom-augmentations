@@ -28,6 +28,7 @@ class DD_Aug_SpyDrone : DD_Augmentation
 			    "will be assembled. The drone can explode in regular\n"
 			    "(+attack) or in EMP explosion (+altattack), destroying\n"
 			    "it in the process.\n"
+			    "Activating the augmentation costs 20 energy.\n";
 			    "Augmentation rebuils the drone in 10 seconds.\n\n";
 
 		let drone = DD_SpyDrone(Spawn("DD_SpyDrone"));
@@ -46,7 +47,7 @@ class DD_Aug_SpyDrone : DD_Augmentation
 
 		legend_count = 2;
 		legend_names[0] = "pick up items on +use";
-		legend_names[1] = "no reconstruction cooldown";
+		legend_names[1] = "no reconstruction cooldown, cost reduced to 10";
 
 		slots_cnt = 1;
 		slots[0] = Cranial;
@@ -66,6 +67,8 @@ class DD_Aug_SpyDrone : DD_Augmentation
 	DD_SpyDrone drone_prev;
 	ui TextureID drone_camtex;
 
+	const construction_cost = 20;
+	const construction_cost_l1 = 10;
 	const construction_time = 10 * 35;
 	int construction_timer;
 
@@ -79,11 +82,19 @@ class DD_Aug_SpyDrone : DD_Augmentation
 				return;
 			}
 
+			if(owner.countinv("DD_BioelectricEnergy") < construction_cost){
+				console.printf("Need 20 bioelectric energy to construct the drone");
+				toggle();
+				return;
+			}
+
 			if(construction_timer > 0){
 				console.printf("Drone reconstruction after %.3gs", ceil(construction_timer / 35.));
 				toggle();
 				return;
 			}
+
+			owner.takeInventory("DD_BioelectricEnergy", legend_installed == 1 ? construction_cost_l1 : construction_cost);
 
 			msens_x = CVar.getCVar("m_sensitivity_x").getFloat();
 			msens_yaw = CVar.getCVar("m_yaw").getFloat();
