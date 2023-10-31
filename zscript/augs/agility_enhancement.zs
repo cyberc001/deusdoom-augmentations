@@ -137,7 +137,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 				aim_tracer.hit_wall = (last_climb_wall == null ? false : true);
 			}
 
-			if(!aim_tracer.hit_wall || !aim_tracer.hit_line)
+			if(!enabled || !aim_tracer.hit_wall || !aim_tracer.hit_line)
 				climbing = false;
 			else{
 				if(!aim_tracer.hit_line)
@@ -265,7 +265,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 			if(KeyBindUtils.checkBind(e.keyScan, "+use") && getRealLevel() > 1){
 				if(climbing)
 					EventHandler.sendNetworkEvent("dd_climb", 0);
-				else{
+				else if(enabled){
 					vector3 dir = (Actor.AngleToVector(owner.angle, cos(owner.pitch)), -sin(owner.pitch));
 					let aim_tracer = new("DD_AimTracer");
 					aim_tracer.source = owner;
@@ -276,7 +276,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 				}
 			}
 
-			if(climbing){
+			if(climbing && enabled){
 				if(KeyBindUtils.checkBind(e.keyScan, "+forward")) EventHandler.sendNetworkEvent("dd_climb", 2);
 				if(KeyBindUtils.checkBind(e.keyScan, "+back")) EventHandler.sendNetworkEvent("dd_climb", 3);
 				if(KeyBindUtils.checkBind(e.keyScan, "+moveleft")) EventHandler.sendNetworkEvent("dd_climb", 4);
