@@ -48,7 +48,7 @@ class DD_Aug_AgilityEnhancement : DD_Augmentation
 		return state ? tex_on : tex_off;
 	}
 
-	override int get_base_drain_rate(){ return 55; }
+	override int get_base_drain_rate(){ return 50; }
 
 	override void install()
 	{

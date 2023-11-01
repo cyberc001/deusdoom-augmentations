@@ -18,7 +18,7 @@ class DD_Aug_MicrofibralMuscle : DD_Augmentation
 	{
 		return state ? tex_on : tex_off;
 	}
-	override int get_base_drain_rate(){ return 20; }
+	override int get_base_drain_rate(){ return 40; }
 
 	override void install()
 	{
@@ -257,7 +257,7 @@ class DD_MuscleHolder : Weapon
 			TNT1 A 1 {
 				if(--invoker.pain_sound_delay <= 0){
 					let pickup_level = countinv("DD_MuscleToken");
-					invoker.holding.DamageMobj(self, self, (8 + pickup_level * 10) * (invoker.aug.legend_installed == 0 ? 3 : 1), "None", DMG_FORCED | DMG_NO_PROTECT);
+					invoker.holding.DamageMobj(self, self, 17 + pickup_level * 11) * (invoker.aug.legend_installed == 0 ? 3 : 1), "None", DMG_FORCED | DMG_NO_PROTECT);
 					SpawnHurtParticles();
 					invoker.holding.A_StartSound(invoker.holding.PainSound, volume: 0.5);
 					invoker.pain_sound_delay = random(pain_sound_delay_min, pain_sound_delay_max);

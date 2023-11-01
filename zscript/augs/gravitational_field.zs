@@ -49,9 +49,9 @@ class DD_Aug_GravitationalField : DD_Augmentation
 	const max_speed_sum = 50;
 	const repulse_fov = 30;
 	
-	protected double getSpeedReduction() { return (legend_installed == 0 && speed_sum <= max_speed_sum) ? 1 : (0.56 + 0.06 * (getRealLevel() - 1)); }
-	protected double getMinSpeed() { return 2 - 0.35 * (getRealLevel() - 1); }
-	protected double getRange() { return 120 + 15 * (getRealLevel() - 1); }
+	protected double getSpeedReduction() { return (legend_installed == 0 && speed_sum <= max_speed_sum) ? 1 : (0.56 + 0.08 * (getRealLevel() - 1)); }
+	protected double getMinSpeed() { return 2 - 0.4 * (getRealLevel() - 1); }
+	protected double getRange() { return 120 + 20 * (getRealLevel() - 1); }
 
 	array<Actor> affected_projectiles;
 	array<double> prev_speeds;

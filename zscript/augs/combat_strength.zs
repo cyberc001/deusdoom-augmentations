@@ -8,7 +8,7 @@ class DD_Aug_CombatStrength : DD_Augmentation
 		return state ? tex_on : tex_off;
 	}
 
-	override int get_base_drain_rate(){ return 50; }
+	override int get_base_drain_rate(){ return 55; }
 
 	override void install()
 	{
@@ -47,7 +47,7 @@ class DD_Aug_CombatStrength : DD_Augmentation
 		tex_on = TexMan.CheckForTexture("COMBSTR1");
 	}
 
-	protected double getDamageFactor() { return 1 + 0.4 * getRealLevel() + (legend_installed == 0 && bonus_timer <= 0 ? 4 : 0) + stack_mul; }
+	protected double getDamageFactor() { return 1 + 0.35 * getRealLevel() + (legend_installed == 0 && bonus_timer <= 0 ? 3 : 0) + stack_mul; }
 
 	override void toggle()
 	{

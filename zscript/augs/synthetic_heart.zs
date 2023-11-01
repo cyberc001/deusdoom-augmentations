@@ -9,7 +9,7 @@ class DD_Aug_SyntheticHeart : DD_Augmentation
 		return passive ? tex_passive : (state ? tex_on : tex_off);
 	}
 
-	override int get_base_drain_rate(){ return 120; }
+	override int get_base_drain_rate(){ return 100; }
 
 	override void install()
 	{
