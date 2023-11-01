@@ -83,16 +83,10 @@ CLASS DD_Aug_BallisticProtection : DD_Augmentation
 			if(legend_installed == 0){
 				if(++reflect_cnt == 2){
 					reflect_cnt = 0;
-					if(source || inflictor){
-						vector3 tosrc;
-						if(source)	tosrc = owner.Vec3To(source).unit();
-						else		tosrc = owner.Vec3To(inflictor).unit();
-						double angle;
-						if(source)	angle = owner.AngleTo(source);
-						else		angle = owner.AngleTo(inflictor);
-						double pitch = -asin(tosrc.z);
-						owner.LineAttack(angle, 4096, pitch, damage * 2, damageType, null);
-					}
+					if(source)
+						source.damageMobj(null, owner, damage*3, damageType);
+					else if(inflictor)
+						inflictor.damageMobj(null, owner, damage*3, damageType);
 				}
 				hud_info = string.format("REFL %d", reflect_cnt);
 			}
