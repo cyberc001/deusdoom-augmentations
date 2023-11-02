@@ -130,8 +130,8 @@ class DD_Aug_CombatStrength : DD_Augmentation
 			while(it.next()){
 				if(!it.thing.bSHOOTABLE || it.thing == owner || it.thing.bFRIENDLY || it.thing == victim)
 					continue;
-				double d_ang = AbsAngle(owner.AngleTo(it.thing), owner.angle);
-				double d_pitch = AbsAngle(owner.PitchTo(it.thing), owner.pitch);
+				double d_ang = AbsAngle(owner.angle, owner.angle);
+				double d_pitch = AbsAngle(owner.pitch, owner.pitch);
 				if(d_ang <= cleave_angle && d_pitch <= cleave_pitch)
 					it.thing.DamageMobj(owner, owner, damage, damageType);
 			}
