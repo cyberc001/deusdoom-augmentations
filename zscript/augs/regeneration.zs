@@ -27,7 +27,7 @@ class DD_Aug_Regeneration : DD_Augmentation
 		return state ? tex_on : tex_off;
 	}
 
-	override int get_base_drain_rate() { return 100; }
+	override int get_base_drain_rate() { return 80; }
 
 	override void install()
 	{
@@ -87,7 +87,7 @@ class DD_Aug_Regeneration : DD_Augmentation
 	protected int getHealthRegenRate() { return 5 * ((!owner || owner is "PlayerPawn" || owner is "DD_AugsHolder") ? 1 : (3 + getRealLevel() - 1) * 1.2) - (owner ? (owner.health >= 100 && legend_installed == 1 ? 2 : 0) : 0); }
 	protected int getHealthRegenInterval()
 	{
-		return 75 - 13 * (getRealLevel() - 1);
+		return 60 - 15 * (getRealLevel() - 1);
 	}
 
 	int regenerated_this_tick; // how much HP was regenerated this tick; used by power recirculator legendary upgrade
