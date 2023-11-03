@@ -193,10 +193,8 @@ class DD_SpawnHandler : StaticEventHandler
 	override void playerSpawned(PlayerEvent e)
 	{
 		PlayerPawn plr = players[e.PlayerNumber].mo;
-		if(plr.countInv("DD_ProgressionTracker") == 0){
-			DD_ProgressionTracker tr = DD_ProgressionTracker(Inventory.Spawn("DD_ProgressionTracker"));
-			plr.addInventory(tr);
-		}
+		if(plr.countInv("DD_ProgressionTracker") == 0)
+			plr.giveInventory("DD_ProgressionTracker", 1);
 
 		while(transfer_items.size() > 0)
 		{
