@@ -84,7 +84,7 @@ class DD_Aug_Regeneration : DD_Augmentation
 	}
 
 	int regen_timer;
-	protected int getHealthRegenRate() { return 5 * ((!owner || owner is "PlayerPawn" || owner is "DD_AugsHolder") ? 1 : (3 + getRealLevel() - 1) * 1.2) - (owner ? (owner.health >= 100 && legend_installed == 1 ? 2 : 0) : 0); }
+	protected int getHealthRegenRate() { return 5 * ((!owner || owner is "PlayerPawn" || owner is "DD_AugsHolder") ? 1 : (3 + getRealLevel() - 1) * 1.5) - (owner ? (owner.health >= 100 && legend_installed == 1 ? 2 : 0) : 0); }
 	protected int getHealthRegenInterval()
 	{
 		return 60 - 15 * (getRealLevel() - 1);
@@ -131,27 +131,22 @@ class DD_Aug_Regeneration : DD_Augmentation
 		super.tick();
 		regenerated_this_tick = 0;
 
-		if(!owner)
-			return;
-
-		if(!enabled)
+		if(!owner || !enabled)
 			return;
 		
 		if(!(owner is "PlayerPawn")){
 			if(regen_timer > 0)
 				--regen_timer;
 			else{
-				double maxreg = min(owner.SpawnHealth() * 0.008 * getRealLevel(), 100 * (getRealLevel() + 1) / 2.);
+				double maxreg = min(owner.SpawnHealth() * 0.015 * getRealLevel(), 75 * (getRealLevel() + 1) / 2.);
 				if(!owner.giveInventory("Health", getHealthRegenRate() + maxreg))
 					toggle();
 				regenerated_this_tick += getHealthRegenRate();
 				regen_timer = getHealthRegenInterval();
 				spawnBloodGFX();
 			}
-		}
-
-		if(!enabled)
 			return;
+		}
 
 		if(legend_installed == 0){
 			let it = BlockThingsIterator.create(owner, consume_radius);
