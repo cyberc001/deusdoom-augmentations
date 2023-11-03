@@ -227,6 +227,7 @@ class DD_MuscleHolder : Weapon
 		if(!holding){
 			End();
 			destroy();
+			return;
 		}
 		if(holding.health <= 0){
 			owner.giveInventory("DD_PickupHolder", 1);
