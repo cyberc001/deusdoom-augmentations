@@ -100,9 +100,9 @@ class DD_Aug_Regeneration : DD_Augmentation
 	protected double getDSWoundRegenAmt()
 	{ return 0.003 + 0.003 * (getRealLevel() - 2); }
 	protected double getDSBodyRegenAmt()
-	{ return 0.005 + 0.003 * (getRealLevel() - 3); }
+	{ return 0.02 + 0.015 * (getRealLevel() - 3); }
 	protected double getDSBloodRegenAmt()
-	{ return 0.006 + 0.003 * (getRealLevel() - 3); }
+	{ return 0.008 + 0.006 * (getRealLevel() - 4); }
 
 	void spawnBloodGFX()
 	{
