@@ -113,6 +113,8 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 			if(!proj){
 				ddevh.proj_list.delete(i); --i; continue;
 			}
+			if(!owner)
+				return;
 
 			bool can_destroy = legend_installed == 1 || RecognitionUtils.projCanBeDestroyed(proj, cd_ml, owner.bIsMonster);
 
