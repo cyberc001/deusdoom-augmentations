@@ -93,6 +93,7 @@ class UI_DDCanisterAugButton : UI_Widget
 				sidepanel.aug_install_sel_slot = install_slot;
 				sidepanel.aug_install_sel = 1;
 
+				sidepanel.label_aug_desc.scroll_reset();
 				sidepanel.label_aug_name.text = aughld.inv_augs[install_slot].disp_name;
 				sidepanel.label_aug_desc.text = aughld.inv_augs[install_slot].disp_desc;
 			}
@@ -106,6 +107,7 @@ class UI_DDCanisterAugButton : UI_Widget
 				}
 				sidepanel.aug_install_sel_slot = install_slot;
 				sidepanel.aug_install_sel = 2;
+				sidepanel.label_aug_desc.scroll_reset();
 				sidepanel.label_aug_name.text = aughld.inv_augs2[install_slot].disp_name;
 				sidepanel.label_aug_desc.text = aughld.inv_augs2[install_slot].disp_desc;
 			}

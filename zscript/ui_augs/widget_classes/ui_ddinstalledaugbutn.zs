@@ -34,6 +34,7 @@ class UI_DDInstalledAugButton : UI_Widget
 		&& aughld.augs[aug_slot].legend_installed != prev_lgnd){
 			prev_lgnd = aughld.augs[aug_slot].legend_installed;
 			PlayerInfo plr = players[consoleplayer];
+			sidepanel.label_aug_desc.scroll_reset(); 
 			sidepanel.label_aug_desc.text = aughld.augs[aug_slot].disp_desc;
 			if(aughld.augs[aug_slot].legend_installed != -1)
 				sidepanel.label_aug_desc.text = sidepanel.label_aug_desc.text .. "Installed legendary upgrade:\n" .. aughld.augs[aug_slot].legend_names[aughld.augs[aug_slot].legend_installed];
@@ -54,6 +55,7 @@ class UI_DDInstalledAugButton : UI_Widget
 				sidepanel.label_aug_name.text = aughld.augs[aug_slot].disp_name;
 						sidepanel.aug_sel = aug_slot;
 				sidepanel.label_aug_desc.text = aughld.augs[aug_slot].disp_desc;
+				sidepanel.label_aug_desc.scroll_reset();
 				if(aughld.augs[aug_slot].legend_installed != -1)
 					sidepanel.label_aug_desc.text = sidepanel.label_aug_desc.text .. "Installed legendary upgrade:\n" .. aughld.augs[aug_slot].legend_names[aughld.augs[aug_slot].legend_installed];
 			}
