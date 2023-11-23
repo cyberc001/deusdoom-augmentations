@@ -128,7 +128,7 @@ class DD_Aug_CombatStrength : DD_Augmentation
 			doCleaveGFX();
 			let it = BlockThingsIterator.create(owner, owner.radius + cleave_radius);
 			while(it.next()){
-				if(!it.thing.bSHOOTABLE || it.thing == owner || it.thing.bFRIENDLY || it.thing == victim)
+				if(!it.thing || !it.thing.bSHOOTABLE || it.thing == owner || it.thing.bFRIENDLY || it.thing == victim)
 					continue;
 				double d_ang = AbsAngle(owner.angle, owner.angle);
 				double d_pitch = AbsAngle(owner.pitch, owner.pitch);
