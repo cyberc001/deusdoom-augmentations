@@ -107,11 +107,12 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 		Actor proj;
 		double cd_ml = 1;
 		let ddevh = DD_AugsEventHandler(StaticEventHandler.Find("DD_AugsEventHandler"));
-		for(uint i = 0; i < ddevh.proj_list.size(); ++i)
+		uint proj_list_size = ddevh.proj_list.size();
+		for(uint i = 0; i < proj_list_size; ++i)
 		{
 			proj = ddevh.proj_list[i];
 			if(!proj){
-				ddevh.proj_list.delete(i); --i; continue;
+				ddevh.proj_list.delete(i); --i; --proj_list_size; continue;
 			}
 			if(!owner)
 				return;
@@ -148,7 +149,7 @@ class DD_Aug_AggressiveDefenseSystem : DD_Augmentation
 						dmod.mult = 2.0;
 					}
 					else
-						proj.die(proj, proj);
+						proj.die(owner, owner);
 				}
 			}
 		}
