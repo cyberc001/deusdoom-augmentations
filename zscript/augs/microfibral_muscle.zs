@@ -157,6 +157,7 @@ class DD_MuscleHolder : Weapon
 
 	default
 	{
+		Tag "Microfibral Muscle";
 		Weapon.SelectionOrder 1000;
 		Weapon.SlotNumber 0;
 		+Weapon.NOALERT;
