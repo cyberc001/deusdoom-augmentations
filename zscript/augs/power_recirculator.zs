@@ -34,7 +34,7 @@ class DD_Aug_PowerRecirculator : DD_Augmentation
 		slots[2] = Torso3;
 
 		legend_count = 3;
-		legend_names[0] = "regain 1/3rd of healing as energy";
+		legend_names[0] = "regain half of healing as energy";
 		legend_names[1] = "slow energy regeneration";
 		legend_names[2] = "+20% power drain reduction";
 
@@ -51,7 +51,7 @@ class DD_Aug_PowerRecirculator : DD_Augmentation
 	double energy_regen_queue;
 	const energy_regen = 0.005;
 
-	protected double getPowerSaveFactor() { return 0.15 + 0.1 * (getRealLevel() - 1) + (legend_installed == 2 ? 0.2 : 0); }
+	protected double getPowerSaveFactor() { return 0.1 + 0.1 * (getRealLevel() - 1) + (legend_installed == 2 ? 0.2 : 0); }
 
 	override void tick()
 	{
@@ -76,7 +76,7 @@ class DD_Aug_PowerRecirculator : DD_Augmentation
 				}
 			}
 			if(health_diff > 0)
-				owner.giveInventory("DD_BioelectricEnergy", ceil(health_diff / 3.));
+				owner.giveInventory("DD_BioelectricEnergy", ceil(health_diff / 2.));
 		}
 		else if(legend_installed == 1){
 			energy_regen_queue += energy_regen;

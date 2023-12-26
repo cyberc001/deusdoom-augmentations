@@ -13,7 +13,7 @@ class DD_Aug_Cloak : DD_Augmentation
 	const bonus_drain_inc = 7;
 	override int get_base_drain_rate()
 	{
-		return (250 - 30 * (getRealLevel() - 1)) * (owner && owner.bISMONSTER ? 0.35 : 1) + bonus_drain;
+		return (240 - 30 * (getRealLevel() - 1)) * (owner && owner.bISMONSTER ? 0.35 : 1) + bonus_drain;
 	}
 
 	override void install()
@@ -54,10 +54,7 @@ class DD_Aug_Cloak : DD_Augmentation
 
 	int getBlinkTime()
 	{
-		if(getRealLevel() <= max_level)
-			return 28 - 6 * (getRealLevel() - 1);
-		else
-			return 28 - 6 * (max_level - 1) - 4 * (getRealLevel() - max_level);
+		return 40 - 6 * (getRealLevel() - 1);
 	}
 	int blinktimer; // timer that starts when player starts an attack, revealing them for a short time
 	int boost_timer; // timer for boosting an attack after cloak, lasts a few ticks
@@ -104,7 +101,7 @@ class DD_Aug_Cloak : DD_Augmentation
 		if(owner is "PlayerPawn")
 			owner.A_SetRenderStyle(1.0, Style_Fuzzy);
 		else
-			owner.A_SetRenderStyle(0.15, Style_Translucent);
+			owner.A_SetRenderStyle(0.25, Style_Translucent);
 
 		Actor mnst;
 		ThinkerIterator it = ThinkerIterator.create("Actor", STAT_DEFAULT);

@@ -15,7 +15,7 @@ class DD_Aug_RadarTransparency : DD_Augmentation
 
 	override int get_base_drain_rate()
 	{
-		return (250 - 30 * (getRealLevel() - 1)) * (blinktimer == 0 ? 1 : 0.5);
+		return (240 - 30 * (getRealLevel() - 1)) * (blinktimer == 0 ? 1 : 0.5);
 	}
 
 	override void install()
@@ -58,7 +58,7 @@ class DD_Aug_RadarTransparency : DD_Augmentation
 
 	int getBlinkTime()
 	{
-		return 28 - 6 * (getRealLevel() - 1);
+		return 40 - 6 * (getRealLevel() - 1);
 	}
 	int blinktimer; // timer that start when player starts an attack, revealing them for a short time
 	int boost_timer; // timer for boosting an attack after cloak, lasts a few ticks

@@ -66,8 +66,8 @@ class DD_Aug_MicrofibralMuscle : DD_Augmentation
 	}
 
 	Actor subdue_target;
-	const subdue_range = 48;
-	const subdue_off = 32;
+	const subdue_range = 90;
+	const subdue_off = 38;
 	Weapon owner_last_weapon;
 	protected clearscope bool canSubdue(Actor a)
 	{
@@ -187,7 +187,7 @@ class DD_MuscleHolder : Weapon
 				invoker.aug.subdueEnd();
 				let dmgr = DD_PickupDamager(invoker.holding.findInventory("DD_PickupDamager"));
 				dmgr.thrower = self;
-				dmgr.damage = (30 + (pickup_level - 1) * 60) * 2.7**(-((my_mass - 0.8)**2) / (2*0.6**2)) * (invoker.aug.legend_installed == 1 ? 2 : 1);
+				dmgr.damage = (75 + (pickup_level - 1) * 75) * 2.7**(-((my_mass - 0.8)**2) / (2*0.6**2)) * (invoker.aug.legend_installed == 1 ? 2 : 1);
 				dmgr.source = self;
 				dmgr.init_vel = invoker.holding.vel;
 			}
